@@ -41,6 +41,9 @@ class RetirementCalculator:
                 'Investment Withdrawal': 0,
                 'Investment Balance End': year_start_balance,
                 'Yearly Investment Return': 0,
+                'OAS': 0,
+                'CPP': 0,
+                'Employer Pension': 0,
                 'Monthly Pension': 0,
                 'Yearly Pension Amount': 0,
                 'Part-Time Income': 0,
@@ -122,36 +125,49 @@ class RetirementCalculator:
                 else:
                     part_time = 0
                 
-                # Government pension
-                # Pension amount is entered in today's dollars, so inflate from current age
-                pension = 0
-                if age >= self.inputs['pension_start_age']:
-                    pension = self.inputs['monthly_pension']
-                    if self.inputs['pension_inflation_adjusted']:
+                # Old Age Security (OAS)
+                # OAS amount is entered in today's dollars, so inflate from current age
+                oas = 0
+                if age >= self.inputs.get('oas_start_age', 65):
+                    oas = self.inputs.get('monthly_oas', 0)
+                    if self.inputs.get('oas_inflation_adjusted', True):
                         # Inflate from current age to this age
                         years_from_now = age - current_age
-                        pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                        oas *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
-                # Private pension
-                private_pension = 0
+                year_data['OAS'] = round(oas, 2)
+                
+                # Canada Pension Plan (CPP)
+                # CPP amount is entered in today's dollars, so inflate from current age
+                cpp = 0
+                if age >= self.inputs.get('cpp_start_age', 65):
+                    cpp = self.inputs.get('monthly_cpp', 0)
+                    if self.inputs.get('cpp_inflation_adjusted', True):
+                        # Inflate from current age to this age
+                        years_from_now = age - current_age
+                        cpp *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                
+                year_data['CPP'] = round(cpp, 2)
+                
+                # Employer/Private pension
+                employer_pension = 0
                 if age >= self.inputs.get('private_pension_start_age', 999):
-                    private_pension = self.inputs.get('monthly_private_pension', 0)
+                    employer_pension = self.inputs.get('monthly_private_pension', 0)
                     if self.inputs.get('private_pension_inflation_adjusted', False):
                         # Inflate from current age to this age
                         years_from_now = age - current_age
-                        private_pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                        employer_pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
-                # Total pension (government + private)
-                total_pension = pension + private_pension
-                if total_pension > 0:
-                    year_data['Monthly Pension'] = round(total_pension, 2)
-                    year_data['Yearly Pension Amount'] = round(total_pension * 12, 2)
+                year_data['Employer Pension'] = round(employer_pension, 2)
+                
+                # Total pension (OAS + CPP + Employer) - will be adjusted for OAS clawback later
+                total_pension_before_clawback = oas + cpp + employer_pension
                 
                 # Add required income column (what you need each month with inflation)
                 year_data['Required Income'] = round(required_income, 2)
                 
                 # STEP 1: Calculate initial investment withdrawal needed (before considering clawback)
-                monthly_from_other = part_time + total_pension
+                monthly_from_other = part_time + total_pension_before_clawback
                 monthly_needed = required_income
                 
                 if monthly_from_other < monthly_needed:
@@ -179,13 +195,13 @@ class RetirementCalculator:
                 # Calculate total annual income for clawback purposes
                 annual_income = (monthly_from_other + monthly_withdrawal) * 12
                 
-                # Calculate OAS clawback (monthly amount)
+                # Calculate OAS clawback (monthly amount) - only applies to OAS, not CPP or employer pension
                 oas_clawback_monthly = 0
                 if annual_income > oas_threshold_this_year:
                     excess_income = annual_income - oas_threshold_this_year
                     annual_clawback = excess_income * OAS_CLAWBACK_RATE
-                    # Clawback cannot exceed the OAS pension amount (government pension only)
-                    max_clawback = pension * 12  # Annual OAS amount
+                    # Clawback cannot exceed the OAS amount
+                    max_clawback = oas * 12  # Annual OAS amount
                     annual_clawback = min(annual_clawback, max_clawback)
                     oas_clawback_monthly = annual_clawback / 12
                 
@@ -220,18 +236,25 @@ class RetirementCalculator:
                 if four_percent_amount > 0:
                     year_data['% Over 4% Rule'] = round(((monthly_withdrawal - four_percent_amount) / four_percent_amount) * 100, 1)
                 
-                # STEP 5: Calculate final Total Monthly Income (after clawback)
-                total_income_before_clawback = part_time + total_pension + monthly_withdrawal
-                year_data['Total Monthly Income'] = round(total_income_before_clawback - oas_clawback_monthly, 2)
+                # STEP 5: Calculate Monthly Pension (total of all pensions after OAS clawback)
+                # OAS is reduced by clawback, CPP and Employer pension are not affected
+                oas_after_clawback = max(0, oas - oas_clawback_monthly)
+                total_pension_after_clawback = oas_after_clawback + cpp + employer_pension
+                year_data['Monthly Pension'] = round(total_pension_after_clawback, 2)
+                year_data['Yearly Pension Amount'] = round(total_pension_after_clawback * 12, 2)
+                
+                # STEP 6: Calculate final Total Monthly Income (after clawback)
+                year_data['Total Monthly Income'] = round(part_time + total_pension_after_clawback + monthly_withdrawal, 2)
                 
                 # Calculate monthly shortfall (only show if positive = shortfall exists)
-                monthly_shortfall = required_income - (monthly_from_other + monthly_withdrawal)
+                effective_income = part_time + total_pension_after_clawback + monthly_withdrawal
+                monthly_shortfall = required_income - effective_income
                 year_data['Monthly Shortfall'] = round(monthly_shortfall, 2) if monthly_shortfall > 0 else 0
                 
                 # Calculate income in today's dollars (deflate by inflation)
                 years_from_now = age - current_age
                 inflation_factor = (1 + self.inputs['yearly_inflation'] / 100) ** years_from_now
-                income_todays_dollars = (monthly_from_other + monthly_withdrawal) / inflation_factor
+                income_todays_dollars = effective_income / inflation_factor
                 year_data['Income (Today\'s $)'] = round(income_todays_dollars, 2)
                 
                 # Calculate returns on balance AFTER withdrawals

@@ -767,17 +767,29 @@ with tab2:
         stop_investments_age = st.number_input("Stop Contributions at Age", current_age, retirement_age, default_stop_age, help="Age when you'll stop making monthly contributions")
 
 with tab3:
-    st.markdown("### Government Pension (CPP/OAS)")
+    st.markdown("### Old Age Security (OAS)")
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        pension_start_age = st.number_input("Start Age", 60, 70, key="gov_start", help="Age when government pension starts")
+        oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start", value=get_default('oas_start_age', 65), help="Age when OAS starts (typically 65)")
     
     with col2:
-        monthly_pension = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=100, key="gov_amt", help="Monthly pension amount in today's dollars")
+        monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 2000, step=50, key="oas_amt", value=get_default('monthly_oas', 0), help="Monthly OAS amount in today's dollars")
     
     with col3:
-        pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="gov_idx", value=get_default('pension_inflation_adjusted', True))
+        oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx", value=get_default('oas_inflation_adjusted', True))
+    
+    st.markdown("### Canada Pension Plan (CPP)")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start", value=get_default('cpp_start_age', 65), help="Age when CPP starts (60-70)")
+    
+    with col2:
+        monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 2000, step=50, key="cpp_amt", value=get_default('monthly_cpp', 0), help="Monthly CPP amount in today's dollars")
+    
+    with col3:
+        cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx", value=get_default('cpp_inflation_adjusted', True))
     
     st.markdown("### Employer/Private Pension")
     col1, col2, col3 = st.columns(3)
@@ -956,8 +968,12 @@ inputs = {
     'reduction_2_enabled': reduction_2_enabled,
     'age_83_threshold': age_83_threshold,
     'age_83_reduction': age_83_reduction,
-    'pension_start_age': pension_start_age,
-    'monthly_pension': monthly_pension,
+    'oas_start_age': oas_start_age,
+    'monthly_oas': monthly_oas,
+    'oas_inflation_adjusted': oas_inflation_adjusted,
+    'cpp_start_age': cpp_start_age,
+    'monthly_cpp': monthly_cpp,
+    'cpp_inflation_adjusted': cpp_inflation_adjusted,
     'private_pension_start_age': private_pension_start_age,
     'monthly_private_pension': monthly_private_pension,
     'private_pension_inflation_adjusted': private_pension_inflation_adjusted,
@@ -966,7 +982,6 @@ inputs = {
     'part_time_end_age': part_time_end_age,
     'part_time_inflation_adjusted': part_time_inflation_adjusted,
     'stop_investments_age': stop_investments_age,
-    'pension_inflation_adjusted': pension_inflation_adjusted,
     'inflation_adjustment_enabled': inflation_adjustment_enabled,
     'lump_sums': st.session_state.get('lump_sums', []),
     'lump_sum_withdrawals': st.session_state.get('lump_sum_withdrawals', [])
@@ -1051,6 +1066,9 @@ if 'results' in st.session_state and st.session_state.results:
         'Total Monthly Income',
         'Required Income',
         'Monthly Shortfall',
+        'OAS',
+        'CPP',
+        'Employer Pension',
         'Monthly Pension',
         'Investment Withdrawal',
         'Part-Time Income',
@@ -1070,7 +1088,8 @@ if 'results' in st.session_state and st.session_state.results:
     
     # Format currency columns
     currency_cols = ['Investment Balance Start', 'Monthly Investment', 'Investment Withdrawal', 
-                     'Monthly Pension', 'Part-Time Income', 'Lump Sum', 'Lump Sum Withdrawal', 
+                     'OAS', 'CPP', 'Employer Pension', 'Monthly Pension', 'Part-Time Income', 
+                     'Lump Sum', 'Lump Sum Withdrawal', 
                      'Required Income', 'Total Monthly Income', 'Monthly Shortfall', 'Income (Today\'s $)',
                      'Yearly Investment Return', 'Yearly Pension Amount', 'Investment Balance End',
                      'OAS Clawback', '4% Rule Amount', 'Withdrawal vs 4% Rule']
