@@ -36,9 +36,11 @@ class RetirementCalculator:
                 'Total Monthly Income': 0,
                 'Required Income': 0,
                 'Monthly Shortfall': 0,
+                'Monthly Surplus': 0,
                 'Investment Balance Start': year_start_balance,
                 'Monthly Investment': 0,
                 'Investment Withdrawal': 0,
+                'Surplus Reinvested': 0,
                 'Investment Balance End': year_start_balance,
                 'Yearly Investment Return': 0,
                 'OAS': 0,
@@ -261,13 +263,22 @@ class RetirementCalculator:
                 monthly_shortfall = required_income - effective_income
                 year_data['Monthly Shortfall'] = round(monthly_shortfall, 2) if monthly_shortfall > 0 else 0
                 
+                # STEP 7: Calculate and reinvest surplus if income exceeds required
+                monthly_surplus = 0
+                if effective_income > required_income:
+                    monthly_surplus = effective_income - required_income
+                    annual_surplus = monthly_surplus * 12
+                    balance += annual_surplus  # Reinvest surplus back into investments
+                    year_data['Monthly Surplus'] = round(monthly_surplus, 2)
+                    year_data['Surplus Reinvested'] = round(annual_surplus, 2)
+                
                 # Calculate income in today's dollars (deflate by inflation)
                 years_from_now = age - current_age
                 inflation_factor = (1 + self.inputs['yearly_inflation'] / 100) ** years_from_now
                 income_todays_dollars = effective_income / inflation_factor
                 year_data['Income (Today\'s $)'] = round(income_todays_dollars, 2)
                 
-                # Calculate returns on balance AFTER withdrawals
+                # Calculate returns on balance AFTER withdrawals and surplus reinvestment
                 annual_return = balance * (self.inputs['investment_return'] / 100)
                 balance += annual_return
                 year_data['Yearly Investment Return'] = round(annual_return, 2)
