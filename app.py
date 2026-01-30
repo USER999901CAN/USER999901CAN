@@ -919,7 +919,7 @@ with tab3:
         
         with col1:
             private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start_p1", 
-                                                       value=get_default('private_pension_start_age', 999),
+                                                       value=min(get_default('private_pension_start_age', 100), 100),
                                                        help="Age when employer pension starts")
         
         with col2:
@@ -937,7 +937,7 @@ with tab3:
         
         with col1:
             private_pension_start_age_p2 = st.number_input("Start Age", 50, 100, key="priv_start_p2", 
-                                                          value=get_default('private_pension_start_age_p2', 999),
+                                                          value=min(get_default('private_pension_start_age_p2', 100), 100),
                                                           help="Age when employer pension starts")
         
         with col2:
@@ -954,7 +954,7 @@ with tab3:
         
         with col1:
             private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start", 
-                                                       value=get_default('private_pension_start_age', 999),
+                                                       value=min(get_default('private_pension_start_age', 100), 100),
                                                        help="Age when employer pension starts")
         
         with col2:
