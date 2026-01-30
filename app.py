@@ -734,7 +734,7 @@ with tab1:
         yearly_inflation = st.number_input("Annual Inflation Rate (%)", 0.0, 10.0, get_default('yearly_inflation', 2.1), step=0.1)
     
     with col2:
-        investment_return = st.number_input("Expected Investment Return (%)", 0.0, 20.0, get_default('investment_return', 6.5), step=0.1)
+        investment_return = st.number_input("Expected Investment Return (%)", 0.0, 20.0, get_default('investment_return', 6.0), step=0.1)
     
     # Calculate button
     st.markdown("---")
@@ -802,7 +802,7 @@ with tab3:
         
         with col2:
             monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p1", 
-                                         value=get_default('monthly_oas', 1484), 
+                                         value=get_default('monthly_oas', 0), 
                                          help="Monthly OAS amount in today's dollars")
         
         with col3:
@@ -820,7 +820,7 @@ with tab3:
         
         with col2:
             monthly_oas_p2 = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p2", 
-                                            value=get_default('monthly_oas_p2', 1484), 
+                                            value=get_default('monthly_oas_p2', 0), 
                                             help="Monthly OAS amount in today's dollars")
         
         with col3:
@@ -837,7 +837,7 @@ with tab3:
         
         with col2:
             monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt", 
-                                         value=get_default('monthly_oas', 1484), 
+                                         value=get_default('monthly_oas', 0), 
                                          help="Monthly OAS amount in today's dollars")
         
         with col3:
@@ -863,7 +863,7 @@ with tab3:
         
         with col2:
             monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p1", 
-                                         value=get_default('monthly_cpp', 2000), 
+                                         value=get_default('monthly_cpp', 0), 
                                          help="Monthly CPP amount in today's dollars")
         
         with col3:
@@ -881,7 +881,7 @@ with tab3:
         
         with col2:
             monthly_cpp_p2 = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p2", 
-                                            value=get_default('monthly_cpp_p2', 2000), 
+                                            value=get_default('monthly_cpp_p2', 0), 
                                             help="Monthly CPP amount in today's dollars")
         
         with col3:
@@ -898,7 +898,7 @@ with tab3:
         
         with col2:
             monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt", 
-                                         value=get_default('monthly_cpp', 2000), 
+                                         value=get_default('monthly_cpp', 0), 
                                          help="Monthly CPP amount in today's dollars")
         
         with col3:
@@ -919,7 +919,7 @@ with tab3:
         
         with col1:
             private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start_p1", 
-                                                       value=min(get_default('private_pension_start_age', 100), 100),
+                                                       value=min(get_default('private_pension_start_age', 500), 100),
                                                        help="Age when employer pension starts")
         
         with col2:
@@ -937,7 +937,7 @@ with tab3:
         
         with col1:
             private_pension_start_age_p2 = st.number_input("Start Age", 50, 100, key="priv_start_p2", 
-                                                          value=min(get_default('private_pension_start_age_p2', 100), 100),
+                                                          value=min(get_default('private_pension_start_age_p2', 500), 100),
                                                           help="Age when employer pension starts")
         
         with col2:
@@ -954,7 +954,7 @@ with tab3:
         
         with col1:
             private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start", 
-                                                       value=min(get_default('private_pension_start_age', 100), 100),
+                                                       value=min(get_default('private_pension_start_age', 500), 100),
                                                        help="Age when employer pension starts")
         
         with col2:
@@ -993,7 +993,7 @@ with tab4:
             default_part_time_start = get_default('part_time_start_age', retirement_age)
             part_time_start_age = st.number_input("Start Age", retirement_age, 100, default_part_time_start if default_part_time_start >= retirement_age else retirement_age)
         with c2:
-            default_part_time_end = get_default('part_time_end_age', retirement_age)
+            default_part_time_end = get_default('part_time_end_age', retirement_age - 1)
             part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end if default_part_time_end >= part_time_start_age else retirement_age)
         with c3:
             part_time_income = st.number_input("$/Mo", 0, 20000, step=100, key="pt_income", help="Monthly part-time income in today's dollars")
