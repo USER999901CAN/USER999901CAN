@@ -610,4 +610,220 @@ class RetirementCalculator:
         advice_parts.append("- Review and adjust withdrawal amounts annually")
         advice_parts.append("- Consider inflation-protected annuities for portion of portfolio\n")
         
+        # Asset Allocation Strategy - NEW COMPREHENSIVE SECTION
+        advice_parts.append("\n### 📊 Personalized Asset Allocation Strategy\n")
+        advice_parts.append("**Your Investment Glide Path: A Decade-by-Decade Plan**\n")
+        
+        # Calculate current allocation recommendation
+        years_to_retirement = retirement_age - current_age
+        
+        # Current age allocation
+        if years_to_retirement > 10:
+            current_equity = min(90, 110 - current_age)
+            current_bonds = 100 - current_equity
+            advice_parts.append(f"**TODAY (Age {current_age}, {years_to_retirement} years to retirement):**")
+            advice_parts.append(f"- Equities: {current_equity}% (${total * current_equity / 100:,.0f})")
+            advice_parts.append(f"- Bonds/Fixed Income: {current_bonds}% (${total * current_bonds / 100:,.0f})")
+            advice_parts.append(f"- Rationale: Maximize growth with {years_to_retirement} years to recover from market downturns\n")
+        
+        # 10 years before retirement
+        if years_to_retirement >= 10:
+            age_minus_10 = retirement_age - 10
+            equity_minus_10 = min(80, 110 - age_minus_10)
+            bonds_minus_10 = 100 - equity_minus_10
+            
+            # Project portfolio value 10 years before retirement
+            years_until = age_minus_10 - current_age
+            if years_until > 0:
+                projected_balance = total
+                for _ in range(years_until):
+                    projected_balance += self.inputs['monthly_investments'] * 12
+                    projected_balance *= (1 + self.inputs['investment_return'] / 100)
+                
+                advice_parts.append(f"**AGE {age_minus_10} (10 years before retirement):**")
+                advice_parts.append(f"- Projected Portfolio: ${projected_balance:,.0f}")
+                advice_parts.append(f"- Target Allocation: {equity_minus_10}% equities / {bonds_minus_10}% bonds")
+                advice_parts.append(f"  - Equities: ${projected_balance * equity_minus_10 / 100:,.0f}")
+                advice_parts.append(f"  - Bonds: ${projected_balance * bonds_minus_10 / 100:,.0f}")
+                advice_parts.append(f"- Action: Begin gradual shift to bonds, reduce equity by 1-2% per year")
+                advice_parts.append(f"- Focus: Balance growth with capital preservation\n")
+        
+        # 5 years before retirement
+        if years_to_retirement >= 5:
+            age_minus_5 = retirement_age - 5
+            equity_minus_5 = min(70, 110 - age_minus_5)
+            bonds_minus_5 = 100 - equity_minus_5
+            
+            years_until = age_minus_5 - current_age
+            if years_until > 0:
+                projected_balance = total
+                for _ in range(years_until):
+                    projected_balance += self.inputs['monthly_investments'] * 12
+                    projected_balance *= (1 + self.inputs['investment_return'] / 100)
+                
+                advice_parts.append(f"**AGE {age_minus_5} (5 years before retirement):**")
+                advice_parts.append(f"- Projected Portfolio: ${projected_balance:,.0f}")
+                advice_parts.append(f"- Target Allocation: {equity_minus_5}% equities / {bonds_minus_5}% bonds")
+                advice_parts.append(f"  - Equities: ${projected_balance * equity_minus_5 / 100:,.0f}")
+                advice_parts.append(f"  - Bonds: ${projected_balance * bonds_minus_5 / 100:,.0f}")
+                advice_parts.append(f"- Action: Accelerate bond allocation, build 2-year cash reserve")
+                advice_parts.append(f"- Cash Reserve Target: ${self.inputs['retirement_year_one_income'] * 24:,.0f} (2 years expenses)\n")
+        
+        # At retirement
+        retirement_balance = next((r['Investment Balance Start'] for r in projection if r['Age'] == retirement_age), total)
+        equity_at_retirement = max(40, min(60, 110 - retirement_age))
+        bonds_at_retirement = 100 - equity_at_retirement
+        
+        advice_parts.append(f"**AGE {retirement_age} (RETIREMENT DAY):**")
+        advice_parts.append(f"- Projected Portfolio: ${retirement_balance:,.0f}")
+        advice_parts.append(f"- Target Allocation: {equity_at_retirement}% equities / {bonds_at_retirement}% bonds")
+        advice_parts.append(f"  - Equities: ${retirement_balance * equity_at_retirement / 100:,.0f}")
+        advice_parts.append(f"  - Bonds: ${retirement_balance * bonds_at_retirement / 100:,.0f}")
+        advice_parts.append(f"- Cash Reserve: ${self.inputs['retirement_year_one_income'] * 24:,.0f} (2 years)")
+        advice_parts.append(f"- Strategy: Maintain growth potential while protecting principal\n")
+        
+        # Age 70 (CPP/OAS typically start)
+        age_70_balance = next((r['Investment Balance Start'] for r in projection if r['Age'] == 70), retirement_balance)
+        equity_70 = max(35, min(50, 110 - 70))
+        bonds_70 = 100 - equity_70
+        
+        advice_parts.append(f"**AGE 70 (CPP/OAS Income Begins):**")
+        advice_parts.append(f"- Projected Portfolio: ${age_70_balance:,.0f}")
+        advice_parts.append(f"- Target Allocation: {equity_70}% equities / {bonds_70}% bonds")
+        advice_parts.append(f"  - Equities: ${age_70_balance * equity_70 / 100:,.0f}")
+        advice_parts.append(f"  - Bonds: ${age_70_balance * bonds_70 / 100:,.0f}")
+        advice_parts.append(f"- Rationale: Government income reduces portfolio withdrawal pressure")
+        advice_parts.append(f"- Action: Can maintain higher equity allocation with guaranteed income floor\n")
+        
+        # Age 75 (RRIF minimum withdrawals)
+        age_75_balance = next((r['Investment Balance Start'] for r in projection if r['Age'] == 75), age_70_balance)
+        equity_75 = max(30, min(45, 110 - 75))
+        bonds_75 = 100 - equity_75
+        
+        advice_parts.append(f"**AGE 75 (RRIF Minimum Withdrawals):**")
+        advice_parts.append(f"- Projected Portfolio: ${age_75_balance:,.0f}")
+        advice_parts.append(f"- Target Allocation: {equity_75}% equities / {bonds_75}% bonds")
+        advice_parts.append(f"  - Equities: ${age_75_balance * equity_75 / 100:,.0f}")
+        advice_parts.append(f"  - Bonds: ${age_75_balance * bonds_75 / 100:,.0f}")
+        advice_parts.append(f"- RRIF Minimum: {5.82}% (increases annually)")
+        advice_parts.append(f"- Strategy: Balance mandatory withdrawals with longevity risk\n")
+        
+        # Age 85 (Late retirement)
+        age_85_balance = next((r['Investment Balance Start'] for r in projection if r['Age'] == 85), age_75_balance)
+        equity_85 = max(25, min(35, 110 - 85))
+        bonds_85 = 100 - equity_85
+        
+        advice_parts.append(f"**AGE 85 (Late Retirement Phase):**")
+        advice_parts.append(f"- Projected Portfolio: ${age_85_balance:,.0f}")
+        advice_parts.append(f"- Target Allocation: {equity_85}% equities / {bonds_85}% bonds")
+        advice_parts.append(f"  - Equities: ${age_85_balance * equity_85 / 100:,.0f}")
+        advice_parts.append(f"  - Bonds: ${age_85_balance * bonds_85 / 100:,.0f}")
+        advice_parts.append(f"- Focus: Capital preservation with inflation protection")
+        advice_parts.append(f"- Consider: Annuity for portion of portfolio for guaranteed income\n")
+        
+        # Account-Specific Allocation Strategy
+        advice_parts.append("\n**Account-Specific Investment Strategy:**\n")
+        
+        if tfsa > 0:
+            advice_parts.append(f"**TFSA (${tfsa:,.0f}):**")
+            advice_parts.append(f"- Hold: Growth equities (Canadian/US/International stocks)")
+            advice_parts.append(f"- Rationale: Tax-free growth maximizes long-term value")
+            advice_parts.append(f"- Suggested: 80-100% equities regardless of age")
+            advice_parts.append(f"- Withdraw last in retirement (preserve tax-free growth)\n")
+        
+        if rrsp > 0:
+            advice_parts.append(f"**RRSP/RRIF (${rrsp:,.0f}):**")
+            advice_parts.append(f"- Hold: Mix of equities and bonds per age-based allocation")
+            advice_parts.append(f"- Before 71: Balanced portfolio matching overall target")
+            advice_parts.append(f"- After 71: Shift to bonds/GICs to meet RRIF minimums")
+            advice_parts.append(f"- Suggested: {equity_at_retirement}% equities / {bonds_at_retirement}% bonds at retirement")
+            advice_parts.append(f"- Withdraw strategically to minimize tax (ages 65-71)\n")
+        
+        if non_registered > 0:
+            advice_parts.append(f"**Non-Registered (${non_registered:,.0f}):**")
+            advice_parts.append(f"- Hold: Canadian dividend stocks, growth stocks")
+            advice_parts.append(f"- Rationale: Dividend tax credit and capital gains treatment")
+            advice_parts.append(f"- Avoid: Interest-bearing investments (fully taxable)")
+            advice_parts.append(f"- Strategy: Tax-loss harvesting to offset gains")
+            advice_parts.append(f"- Withdraw first in retirement (ages 65-71)\n")
+        
+        if lira > 0:
+            advice_parts.append(f"**LIRA/LIF (${lira:,.0f}):**")
+            advice_parts.append(f"- Hold: Balanced portfolio with focus on income")
+            advice_parts.append(f"- Constraint: Maximum annual withdrawal limits")
+            advice_parts.append(f"- Suggested: {equity_at_retirement}% equities / {bonds_at_retirement}% bonds")
+            advice_parts.append(f"- Convert to LIF at retirement for income access\n")
+        
+        # Rebalancing Strategy
+        advice_parts.append("\n**Rebalancing Strategy:**\n")
+        advice_parts.append(f"- **Frequency:** Review quarterly, rebalance when allocation drifts >5%")
+        advice_parts.append(f"- **Method:** Sell high performers, buy underperformers")
+        advice_parts.append(f"- **Tax-Efficient:** Rebalance within TFSA/RRSP first (no tax impact)")
+        advice_parts.append(f"- **Contributions:** Direct new money to underweight assets")
+        advice_parts.append(f"- **Withdrawals:** Take from overweight assets in retirement\n")
+        
+        # Specific Product Recommendations
+        advice_parts.append("\n**Recommended Investment Products (Canadian):**\n")
+        advice_parts.append("**Equity Allocation:**")
+        advice_parts.append("- 40% Canadian Equity: VCN (Vanguard Canada All Cap) or XIC (iShares Core S&P/TSX)")
+        advice_parts.append("- 35% US Equity: VFV (Vanguard S&P 500) or XUU (iShares Core S&P US)")
+        advice_parts.append("- 25% International: VIU (Vanguard FTSE Developed ex NA) or XEF (iShares MSCI EAFE)\n")
+        
+        advice_parts.append("**Bond Allocation:**")
+        advice_parts.append("- 60% Canadian Bonds: VAB (Vanguard Canadian Aggregate) or XBB (iShares Core Canadian)")
+        advice_parts.append("- 30% Short-Term Bonds: VSB (Vanguard Canadian Short-Term) for stability")
+        advice_parts.append("- 10% Real Return Bonds: XRB (iShares Real Return) for inflation protection\n")
+        
+        advice_parts.append("**All-in-One Options (Automatic Rebalancing):**")
+        advice_parts.append(f"- Conservative (30/70): VCNS (Vanguard) or XCNS (iShares)")
+        advice_parts.append(f"- Balanced (60/40): VBAL (Vanguard) or XBAL (iShares)")
+        advice_parts.append(f"- Growth (80/20): VGRO (Vanguard) or XGRO (iShares)")
+        advice_parts.append(f"- Aggressive (100/0): VEQT (Vanguard) or XEQT (iShares)\n")
+        
+        # Transition Milestones
+        advice_parts.append("\n**Key Transition Milestones & Actions:**\n")
+        
+        if years_to_retirement > 10:
+            advice_parts.append(f"**{retirement_age - 10} (10 years out):**")
+            advice_parts.append(f"- Review and update retirement income needs")
+            advice_parts.append(f"- Begin shifting 1-2% annually from equities to bonds")
+            advice_parts.append(f"- Maximize TFSA contributions (${7000}/year in 2024)")
+            advice_parts.append(f"- Consider topping up RRSP to maximize deduction\n")
+        
+        if years_to_retirement > 5:
+            advice_parts.append(f"**{retirement_age - 5} (5 years out):**")
+            advice_parts.append(f"- Build 2-year cash reserve: ${self.inputs['retirement_year_one_income'] * 24:,.0f}")
+            advice_parts.append(f"- Accelerate bond allocation to target {bonds_at_retirement}%")
+            advice_parts.append(f"- Review CPP/OAS start age strategy (60-70 for CPP, 65-70 for OAS)")
+            advice_parts.append(f"- Consolidate accounts for easier management\n")
+        
+        advice_parts.append(f"**{retirement_age} (Retirement):**")
+        advice_parts.append(f"- Implement systematic withdrawal plan")
+        advice_parts.append(f"- Set up monthly transfers from investments to chequing")
+        advice_parts.append(f"- Apply for CPP/OAS if starting at 65")
+        advice_parts.append(f"- Review and adjust asset allocation to {equity_at_retirement}/{bonds_at_retirement}\n")
+        
+        advice_parts.append(f"**71 (RRSP to RRIF Conversion):**")
+        advice_parts.append(f"- Convert RRSP to RRIF by December 31")
+        advice_parts.append(f"- Set up RRIF minimum withdrawal schedule")
+        advice_parts.append(f"- Consider pension income splitting with spouse")
+        advice_parts.append(f"- Review withholding tax strategy\n")
+        
+        # Risk Management
+        advice_parts.append("\n**Risk Management Throughout Retirement:**\n")
+        advice_parts.append("**Sequence of Returns Risk:**")
+        advice_parts.append("- Most dangerous: Poor returns in first 5 years of retirement")
+        advice_parts.append("- Protection: 2-year cash reserve + bond ladder")
+        advice_parts.append("- Strategy: Don't sell equities in down markets, use cash/bonds\n")
+        
+        advice_parts.append("**Longevity Risk:**")
+        advice_parts.append("- Canadians living to 90+ increasingly common")
+        advice_parts.append("- Solution: Maintain 30-40% equities throughout retirement")
+        advice_parts.append("- Consider: Annuity at age 75-80 for guaranteed lifetime income\n")
+        
+        advice_parts.append("**Inflation Risk:**")
+        advice_parts.append("- Historical average: 2-3% annually")
+        advice_parts.append("- Impact: Purchasing power halves every 24 years at 3%")
+        advice_parts.append("- Protection: Equities, real return bonds, indexed pensions\n")
+        
         return "\n".join(advice_parts)
