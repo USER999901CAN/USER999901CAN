@@ -735,12 +735,11 @@ with tab1:
     with col2:
         investment_return = st.number_input("Expected Investment Return (%)", 0.0, 20.0, get_default('investment_return', 6.5), step=0.1)
     
-    # Navigation
+    # Calculate button
     st.markdown("---")
     col1, col2 = st.columns([4, 1])
     with col2:
-        if st.button("Next →", key="tab1_next", use_container_width=True):
-            st.session_state.active_tab = 1  # Switch to tab 2
+        calculate_button_tab1 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab1")
 
 with tab2:
     st.markdown("### Current Investment Balances")
@@ -773,15 +772,11 @@ with tab2:
         default_stop_age = max(current_age, min(default_stop_age, retirement_age))
         stop_investments_age = st.number_input("Stop Contributions at Age", current_age, retirement_age, default_stop_age, help="Age when you'll stop making monthly contributions")
     
-    # Navigation
+    # Calculate button
     st.markdown("---")
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col1:
-        if st.button("← Back", key="tab2_back", use_container_width=True):
-            st.session_state.active_tab = 0  # Switch to tab 1
-    with col3:
-        if st.button("Next →", key="tab2_next", use_container_width=True):
-            st.session_state.active_tab = 2  # Switch to tab 3
+    col1, col2 = st.columns([4, 1])
+    with col2:
+        calculate_button_tab2 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab2")
 
 with tab3:
     st.markdown("### Old Age Security (OAS)")
@@ -820,15 +815,11 @@ with tab3:
     with col3:
         private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", value=get_default('private_pension_inflation_adjusted', True))
     
-    # Navigation
+    # Calculate button
     st.markdown("---")
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col1:
-        if st.button("← Back", key="tab3_back", use_container_width=True):
-            st.session_state.active_tab = 1  # Switch to tab 2
-    with col3:
-        if st.button("Next →", key="tab3_next", use_container_width=True):
-            st.session_state.active_tab = 3  # Switch to tab 4
+    col1, col2 = st.columns([4, 1])
+    with col2:
+        calculate_button_tab3 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab3")
 
 with tab4:
     st.markdown("### Part-Time Work")
@@ -915,15 +906,11 @@ with tab4:
                     lump_withdrawals.append({'age': age, 'amount': amount})
                     st.session_state.lump_sum_withdrawals[i] = {'age': age, 'amount': amount}
     
-    # Navigation
+    # Calculate button
     st.markdown("---")
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col1:
-        if st.button("← Back", key="tab4_back", use_container_width=True):
-            st.session_state.active_tab = 2  # Switch to tab 3
-    with col3:
-        if st.button("Next →", key="tab4_next", use_container_width=True):
-            st.session_state.active_tab = 4  # Switch to tab 5
+    col1, col2 = st.columns([4, 1])
+    with col2:
+        calculate_button_tab4 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab4")
 
 with tab5:
     st.markdown("### Age-Based Spending Reductions")
@@ -957,14 +944,11 @@ with tab5:
         with c2:
             age_83_reduction = st.number_input("Reduce By (%)", 0, 100, key="age_reduction_2_pct", disabled=not reduction_2_enabled, value=get_default('age_83_reduction', 10))
     
-    # Navigation
+    # Calculate button
     st.markdown("---")
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col1:
-        if st.button("← Back", key="tab5_back", use_container_width=True):
-            st.session_state.active_tab = 3  # Switch to tab 4
-    with col3:
-        calculate_button = st.button("📊 Calculate", type="primary", use_container_width=True, key="tab5_calculate")
+    col1, col2 = st.columns([4, 1])
+    with col2:
+        calculate_button_tab5 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab5")
 
 # Store inputs
 inputs = {
@@ -1005,6 +989,10 @@ inputs = {
     'lump_sum_withdrawals': st.session_state.get('lump_sum_withdrawals', [])
 }
 st.session_state.inputs = inputs
+
+# Check if any calculate button was pressed
+calculate_button = (calculate_button_tab1 or calculate_button_tab2 or calculate_button_tab3 or 
+                   calculate_button_tab4 or calculate_button_tab5)
 
 if calculate_button:
     calculator = RetirementCalculator(inputs)
