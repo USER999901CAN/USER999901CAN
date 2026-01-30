@@ -123,21 +123,23 @@ class RetirementCalculator:
                     part_time = 0
                 
                 # Government pension
-                # ISSUE 5 FIX: Pension amount is what you'll receive at pension start age (already in future dollars)
+                # Pension amount is entered in today's dollars, so inflate from current age
                 pension = 0
                 if age >= self.inputs['pension_start_age']:
                     pension = self.inputs['monthly_pension']
                     if self.inputs['pension_inflation_adjusted']:
-                        years_since_pension_start = age - self.inputs['pension_start_age']
-                        pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_since_pension_start)
+                        # Inflate from current age to this age
+                        years_from_now = age - current_age
+                        pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
                 # Private pension
                 private_pension = 0
                 if age >= self.inputs.get('private_pension_start_age', 999):
                     private_pension = self.inputs.get('monthly_private_pension', 0)
                     if self.inputs.get('private_pension_inflation_adjusted', False):
-                        years_since_private_start = age - self.inputs['private_pension_start_age']
-                        private_pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_since_private_start)
+                        # Inflate from current age to this age
+                        years_from_now = age - current_age
+                        private_pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
                 # Total pension (government + private)
                 total_pension = pension + private_pension

@@ -774,7 +774,7 @@ with tab3:
         pension_start_age = st.number_input("Start Age", 60, 70, key="gov_start", help="Age when government pension starts")
     
     with col2:
-        monthly_pension = st.number_input("Monthly Amount ($)", 0, 10000, step=100, key="gov_amt", help="Monthly pension amount at start age")
+        monthly_pension = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=100, key="gov_amt", help="Monthly pension amount in today's dollars")
     
     with col3:
         pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="gov_idx", value=get_default('pension_inflation_adjusted', True))
@@ -786,7 +786,7 @@ with tab3:
         private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start", help="Age when employer pension starts")
     
     with col2:
-        monthly_private_pension = st.number_input("Monthly Amount ($)", 0, 50000, step=100, key="priv_amt", help="Monthly pension amount at start age")
+        monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt", help="Monthly pension amount in today's dollars")
     
     with col3:
         private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", value=get_default('private_pension_inflation_adjusted', True))
