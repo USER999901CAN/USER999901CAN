@@ -172,8 +172,6 @@ class RetirementCalculator:
                 else:
                     monthly_withdrawal = 0
                 
-                year_data['Total Monthly Income'] = round(monthly_from_other + monthly_withdrawal, 2)
-                
                 # Calculate OAS clawback based on total annual income
                 # OAS clawback threshold is $86,912 in 2024, clawback rate is 15%
                 # Full clawback occurs at $142,609 (2024)
@@ -196,7 +194,9 @@ class RetirementCalculator:
                 year_data['OAS Clawback'] = round(oas_clawback_monthly, 2)
                 
                 # Reduce Total Monthly Income by clawback
-                year_data['Total Monthly Income'] = round(monthly_from_other + monthly_withdrawal - oas_clawback_monthly, 2)
+                # Total = Part-Time + Pension (Gov + Private) + Investment Withdrawal - OAS Clawback
+                total_income_before_clawback = part_time + total_pension + monthly_withdrawal
+                year_data['Total Monthly Income'] = round(total_income_before_clawback - oas_clawback_monthly, 2)
                 
                 # Calculate monthly shortfall (only show if positive = shortfall exists)
                 monthly_shortfall = required_income - (monthly_from_other + monthly_withdrawal)

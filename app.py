@@ -359,265 +359,303 @@ st.markdown("Plan your retirement with pension, and investment projections")
 
 # Sidebar for scenario management
 with st.sidebar:
-    st.header("💾 Scenarios")
+    st.header("💾 Scenario Manager")
     
-    # Initialize saved scenarios in session state (for uploaded scenarios)
+    # Initialize scenarios in session state
     if 'saved_scenarios' not in st.session_state:
         st.session_state.saved_scenarios = {}
+    if 'active_scenario_name' not in st.session_state:
+        st.session_state.active_scenario_name = None
     
-    # Load imported scenario dropdown
-    if st.session_state.saved_scenarios:
-        st.markdown("#### 📂 Load Imported Scenario")
-        scenario_options = ["-- Select a scenario --"] + list(st.session_state.saved_scenarios.keys())
-        selected_scenario = st.selectbox(
-            "Choose scenario to load:",
-            options=scenario_options,
-            key="scenario_selector",
-            help="Select an imported scenario to populate input parameters"
+    # Active Scenario Selector
+    st.markdown("### 🎯 Active Scenario")
+    scenario_list = list(st.session_state.saved_scenarios.keys())
+    
+    if scenario_list:
+        # Dropdown to switch between loaded scenarios
+        current_index = scenario_list.index(st.session_state.active_scenario_name) if st.session_state.active_scenario_name in scenario_list else 0
+        active_scenario = st.selectbox(
+            "Switch to:",
+            options=scenario_list,
+            index=current_index,
+            key="active_scenario_selector",
+            help="Switch between loaded scenarios"
         )
         
-        if selected_scenario != "-- Select a scenario --":
-            if st.button("📥 Load Selected Scenario", use_container_width=True):
-                loaded_scenario = st.session_state.saved_scenarios[selected_scenario]
-                
-                # Set defaults for any missing fields
-                loaded_scenario.setdefault('reduction_1_enabled', True)
-                loaded_scenario.setdefault('reduction_2_enabled', True)
-                loaded_scenario.setdefault('age_77_threshold', 77)
-                loaded_scenario.setdefault('age_83_threshold', 83)
-                loaded_scenario.setdefault('age_77_reduction', 10)
-                loaded_scenario.setdefault('age_83_reduction', 10)
-                loaded_scenario.setdefault('lump_sums', [])
-                loaded_scenario.setdefault('lump_sum_withdrawals', [])
-                loaded_scenario.setdefault('inflation_adjustment_enabled', True)
-                loaded_scenario.setdefault('pension_inflation_adjusted', True)
-                loaded_scenario.setdefault('private_pension_inflation_adjusted', True)
-                
-                # Store loaded scenario
-                st.session_state.loaded_scenario = loaded_scenario
-                st.session_state.scenario_loaded = True
-                st.session_state.current_loaded_file = selected_scenario
-                st.session_state.current_scenario_name = selected_scenario
-                
-                # Set widget values
-                st.session_state['monthly_inv'] = loaded_scenario.get('monthly_investments', 0)
-                st.session_state['gov_start'] = loaded_scenario.get('pension_start_age', 65)
-                st.session_state['gov_amt'] = loaded_scenario.get('monthly_pension', 0)
-                st.session_state['gov_idx'] = loaded_scenario.get('pension_inflation_adjusted', True)
-                st.session_state['priv_start'] = loaded_scenario.get('private_pension_start_age', 65)
-                st.session_state['priv_amt'] = loaded_scenario.get('monthly_private_pension', 0)
-                st.session_state['priv_idx'] = loaded_scenario.get('private_pension_inflation_adjusted', True)
-                st.session_state['pt_income'] = loaded_scenario.get('part_time_income', 0)
-                st.session_state['pt_idx'] = loaded_scenario.get('part_time_inflation_adjusted', False)
-                st.session_state['reduction_1_enabled'] = loaded_scenario.get('reduction_1_enabled', True)
-                st.session_state['age_reduction_1_age'] = loaded_scenario.get('age_77_threshold', 77)
-                st.session_state['age_reduction_1_pct'] = loaded_scenario.get('age_77_reduction', 10)
-                st.session_state['reduction_2_enabled'] = loaded_scenario.get('reduction_2_enabled', True)
-                st.session_state['age_reduction_2_age'] = loaded_scenario.get('age_83_threshold', 83)
-                st.session_state['age_reduction_2_pct'] = loaded_scenario.get('age_83_reduction', 10)
-                
-                # Reload lump sums
-                st.session_state.lump_sums = loaded_scenario.get('lump_sums', [])
-                st.session_state.lump_sum_withdrawals = loaded_scenario.get('lump_sum_withdrawals', [])
-                st.session_state['num_deposits'] = len(st.session_state.lump_sums)
-                st.session_state['num_withdrawals'] = len(st.session_state.lump_sum_withdrawals)
-                
-                # Clear dynamic keys
-                keys_to_clear = [k for k in list(st.session_state.keys()) 
-                                if k.startswith('lump_age_') or k.startswith('lump_amount_') 
-                                or k.startswith('lump_withdrawal_age_') or k.startswith('lump_withdrawal_amount_')]
-                for key in keys_to_clear:
-                    del st.session_state[key]
-                
-                st.success(f"✅ Loaded: {selected_scenario}")
-                st.rerun()
+        # If selection changed, load that scenario
+        if active_scenario != st.session_state.active_scenario_name:
+            loaded_scenario = st.session_state.saved_scenarios[active_scenario]
+            
+            # Set defaults for any missing fields
+            loaded_scenario.setdefault('reduction_1_enabled', True)
+            loaded_scenario.setdefault('reduction_2_enabled', True)
+            loaded_scenario.setdefault('age_77_threshold', 77)
+            loaded_scenario.setdefault('age_83_threshold', 83)
+            loaded_scenario.setdefault('age_77_reduction', 10)
+            loaded_scenario.setdefault('age_83_reduction', 10)
+            loaded_scenario.setdefault('lump_sums', [])
+            loaded_scenario.setdefault('lump_sum_withdrawals', [])
+            loaded_scenario.setdefault('inflation_adjustment_enabled', True)
+            loaded_scenario.setdefault('pension_inflation_adjusted', True)
+            loaded_scenario.setdefault('private_pension_inflation_adjusted', True)
+            
+            # Store loaded scenario
+            st.session_state.loaded_scenario = loaded_scenario
+            st.session_state.scenario_loaded = True
+            st.session_state.active_scenario_name = active_scenario
+            st.session_state.current_scenario_name = active_scenario
+            
+            # Set widget values
+            st.session_state['monthly_inv'] = loaded_scenario.get('monthly_investments', 0)
+            st.session_state['gov_start'] = loaded_scenario.get('pension_start_age', 65)
+            st.session_state['gov_amt'] = loaded_scenario.get('monthly_pension', 0)
+            st.session_state['gov_idx'] = loaded_scenario.get('pension_inflation_adjusted', True)
+            st.session_state['priv_start'] = loaded_scenario.get('private_pension_start_age', 65)
+            st.session_state['priv_amt'] = loaded_scenario.get('monthly_private_pension', 0)
+            st.session_state['priv_idx'] = loaded_scenario.get('private_pension_inflation_adjusted', True)
+            st.session_state['pt_income'] = loaded_scenario.get('part_time_income', 0)
+            st.session_state['pt_idx'] = loaded_scenario.get('part_time_inflation_adjusted', False)
+            st.session_state['reduction_1_enabled'] = loaded_scenario.get('reduction_1_enabled', True)
+            st.session_state['age_reduction_1_age'] = loaded_scenario.get('age_77_threshold', 77)
+            st.session_state['age_reduction_1_pct'] = loaded_scenario.get('age_77_reduction', 10)
+            st.session_state['reduction_2_enabled'] = loaded_scenario.get('reduction_2_enabled', True)
+            st.session_state['age_reduction_2_age'] = loaded_scenario.get('age_83_threshold', 83)
+            st.session_state['age_reduction_2_pct'] = loaded_scenario.get('age_83_reduction', 10)
+            
+            # Reload lump sums
+            st.session_state.lump_sums = loaded_scenario.get('lump_sums', [])
+            st.session_state.lump_sum_withdrawals = loaded_scenario.get('lump_sum_withdrawals', [])
+            st.session_state['num_deposits'] = len(st.session_state.lump_sums)
+            st.session_state['num_withdrawals'] = len(st.session_state.lump_sum_withdrawals)
+            
+            # Clear dynamic keys
+            keys_to_clear = [k for k in list(st.session_state.keys()) 
+                            if k.startswith('lump_age_') or k.startswith('lump_amount_') 
+                            or k.startswith('lump_withdrawal_age_') or k.startswith('lump_withdrawal_amount_')]
+            for key in keys_to_clear:
+                del st.session_state[key]
+            
+            st.rerun()
         
-        st.markdown("---")
-    
-    # Scenario name input
-    scenario_name = st.text_input(
-        "Scenario Name:",
-        value=st.session_state.get('current_scenario_name', ''),
-        placeholder="e.g., Base Case, Early Retirement, etc.",
-        help="Give this scenario a memorable name"
-    )
-    
-    # Export scenario button
-    if 'inputs' in st.session_state and scenario_name:
-        from datetime import datetime
-        download_data = st.session_state.inputs.copy()
-        download_data['scenario_name'] = scenario_name
-        download_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        scenario_json = json.dumps(download_data, indent=2)
-        
-        # Use scenario name for filename (no timestamp - allows overwrite)
-        safe_filename = scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-        download_filename = f"{safe_filename}.json"
-        
-        # Export button
-        st.download_button(
-            "📤 Export Scenario",
-            data=scenario_json,
-            file_name=download_filename,
-            mime="application/json",
-            use_container_width=True,
-            help="Export scenario file to your computer"
-        )
+        st.caption(f"📊 {len(scenario_list)} scenario(s) loaded")
+    else:
+        st.info("No scenarios loaded. Create or import one below.")
     
     st.markdown("---")
     
-    # Import multiple scenarios
-    uploaded_files = st.file_uploader(
-        "📥 Import Scenarios",
-        type=['json'],
-        accept_multiple_files=True,
-        help="Import one or more scenario JSON files"
-    )
+    # Quick Actions
+    st.markdown("### ⚡ Quick Actions")
     
-    if uploaded_files:
-        # Check if we've already processed these files
-        uploaded_file_names = [f.name for f in uploaded_files]
-        if 'last_uploaded_files' not in st.session_state or st.session_state.last_uploaded_files != uploaded_file_names:
-            st.session_state.last_uploaded_files = uploaded_file_names
-            
-            first_scenario_name = None
+    col1, col2 = st.columns(2)
+    
+    # New Scenario button
+    with col1:
+        if st.button("➕ New", use_container_width=True, help="Create new scenario"):
+            st.session_state.show_new_scenario_dialog = True
+    
+    # Import Scenarios button
+    with col2:
+        if st.button("📥 Import", use_container_width=True, help="Import scenarios from disk"):
+            st.session_state.show_import_dialog = True
+    
+    # New Scenario Dialog
+    if st.session_state.get('show_new_scenario_dialog', False):
+        st.markdown("#### ➕ Create New Scenario")
+        new_scenario_name = st.text_input(
+            "Scenario Name:",
+            placeholder="e.g., Base Case, Early Retirement",
+            key="new_scenario_name_input"
+        )
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Create", use_container_width=True, disabled=not new_scenario_name):
+                if new_scenario_name and new_scenario_name not in st.session_state.saved_scenarios:
+                    # Create empty scenario with current inputs if available
+                    if 'inputs' in st.session_state:
+                        new_scenario_data = st.session_state.inputs.copy()
+                    else:
+                        # Create default scenario
+                        new_scenario_data = {
+                            'current_age': 30,
+                            'retirement_age': 65,
+                            'tfsa': 0,
+                            'rrsp': 0,
+                            'non_registered': 0,
+                            'lira': 0,
+                            'total_investments': 0,
+                            'monthly_investments': 0,
+                            'investment_return': 6.0,
+                            'yearly_inflation': 2.0,
+                            'retirement_year_one_income': 5000,
+                            'pension_start_age': 65,
+                            'monthly_pension': 0,
+                            'private_pension_start_age': 65,
+                            'monthly_private_pension': 0,
+                            'private_pension_inflation_adjusted': True,
+                            'part_time_income': 0,
+                            'part_time_start_age': 65,
+                            'part_time_end_age': 70,
+                            'part_time_inflation_adjusted': False,
+                            'stop_investments_age': 65,
+                            'pension_inflation_adjusted': True,
+                            'inflation_adjustment_enabled': True,
+                            'reduction_1_enabled': True,
+                            'age_77_threshold': 77,
+                            'age_77_reduction': 10,
+                            'reduction_2_enabled': True,
+                            'age_83_threshold': 83,
+                            'age_83_reduction': 10,
+                            'lump_sums': [],
+                            'lump_sum_withdrawals': []
+                        }
+                    
+                    from datetime import datetime
+                    new_scenario_data['scenario_name'] = new_scenario_name
+                    new_scenario_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    
+                    # Add to loaded scenarios
+                    st.session_state.saved_scenarios[new_scenario_name] = new_scenario_data
+                    st.session_state.active_scenario_name = new_scenario_name
+                    st.session_state.current_scenario_name = new_scenario_name
+                    
+                    # Auto-export to disk
+                    scenario_json = json.dumps(new_scenario_data, indent=2)
+                    safe_filename = new_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                    
+                    st.session_state.show_new_scenario_dialog = False
+                    st.success(f"✅ Created: {new_scenario_name}")
+                    st.rerun()
+                elif new_scenario_name in st.session_state.saved_scenarios:
+                    st.error("Scenario name already exists!")
+        
+        with col2:
+            if st.button("Cancel", use_container_width=True):
+                st.session_state.show_new_scenario_dialog = False
+                st.rerun()
+    
+    # Import Dialog
+    if st.session_state.get('show_import_dialog', False):
+        st.markdown("#### 📥 Import Scenarios")
+        uploaded_files = st.file_uploader(
+            "Choose JSON files:",
+            type=['json'],
+            accept_multiple_files=True,
+            key="import_uploader"
+        )
+        
+        if uploaded_files:
+            imported_count = 0
             for uploaded_file in uploaded_files:
                 try:
-                    loaded_scenario = json.loads(uploaded_file.getvalue().decode('utf-8'))
-                    
-                    # Get scenario name from file or filename
-                    scenario_name_from_file = loaded_scenario.get('scenario_name', uploaded_file.name.replace('.json', ''))
+                    scenario_data = json.load(uploaded_file)
+                    scenario_name = scenario_data.get('scenario_name', uploaded_file.name.replace('.json', ''))
                     
                     # Set defaults
-                    loaded_scenario.setdefault('reduction_1_enabled', True)
-                    loaded_scenario.setdefault('reduction_2_enabled', True)
-                    loaded_scenario.setdefault('age_77_threshold', 77)
-                    loaded_scenario.setdefault('age_83_threshold', 83)
-                    loaded_scenario.setdefault('age_77_reduction', 10)
-                    loaded_scenario.setdefault('age_83_reduction', 10)
-                    loaded_scenario.setdefault('lump_sums', [])
-                    loaded_scenario.setdefault('lump_sum_withdrawals', [])
-                    loaded_scenario.setdefault('inflation_adjustment_enabled', True)
-                    loaded_scenario.setdefault('pension_inflation_adjusted', True)
-                    loaded_scenario.setdefault('private_pension_inflation_adjusted', True)
-                    loaded_scenario.setdefault('part_time_inflation_adjusted', False)
-                    loaded_scenario['scenario_name'] = scenario_name_from_file
+                    scenario_data.setdefault('reduction_1_enabled', True)
+                    scenario_data.setdefault('reduction_2_enabled', True)
+                    scenario_data.setdefault('lump_sums', [])
+                    scenario_data.setdefault('lump_sum_withdrawals', [])
+                    scenario_data.setdefault('inflation_adjustment_enabled', True)
+                    scenario_data.setdefault('pension_inflation_adjusted', True)
+                    scenario_data.setdefault('private_pension_inflation_adjusted', True)
+                    scenario_data.setdefault('part_time_inflation_adjusted', False)
                     
-                    # Add to saved scenarios
-                    st.session_state.saved_scenarios[scenario_name_from_file] = loaded_scenario
-                    
-                    # Remember first scenario name
-                    if first_scenario_name is None:
-                        first_scenario_name = scenario_name_from_file
+                    # Add to loaded scenarios
+                    st.session_state.saved_scenarios[scenario_name] = scenario_data
+                    imported_count += 1
                     
                 except Exception as e:
-                    st.error(f"❌ Error loading {uploaded_file.name}: {str(e)}")
+                    st.error(f"Error loading {uploaded_file.name}: {str(e)}")
             
-            st.success(f"✅ Uploaded {len(uploaded_files)} scenario(s)")
-            
-            # Auto-load the first uploaded scenario
-            if first_scenario_name and first_scenario_name in st.session_state.saved_scenarios:
-                loaded_scenario = st.session_state.saved_scenarios[first_scenario_name]
-                
-                # Store loaded scenario
-                st.session_state.loaded_scenario = loaded_scenario
-                st.session_state.scenario_loaded = True
-                st.session_state.current_loaded_file = first_scenario_name
-                st.session_state.current_scenario_name = first_scenario_name
-                
-                # Set widget values
-                st.session_state['monthly_inv'] = loaded_scenario.get('monthly_investments', 0)
-                st.session_state['gov_start'] = loaded_scenario.get('pension_start_age', 65)
-                st.session_state['gov_amt'] = loaded_scenario.get('monthly_pension', 0)
-                st.session_state['gov_idx'] = loaded_scenario.get('pension_inflation_adjusted', True)
-                st.session_state['priv_start'] = loaded_scenario.get('private_pension_start_age', 65)
-                st.session_state['priv_amt'] = loaded_scenario.get('monthly_private_pension', 0)
-                st.session_state['priv_idx'] = loaded_scenario.get('private_pension_inflation_adjusted', True)
-                st.session_state['pt_income'] = loaded_scenario.get('part_time_income', 0)
-                st.session_state['pt_idx'] = loaded_scenario.get('part_time_inflation_adjusted', False)
-                st.session_state['reduction_1_enabled'] = loaded_scenario.get('reduction_1_enabled', True)
-                st.session_state['age_reduction_1_age'] = loaded_scenario.get('age_77_threshold', 77)
-                st.session_state['age_reduction_1_pct'] = loaded_scenario.get('age_77_reduction', 10)
-                st.session_state['reduction_2_enabled'] = loaded_scenario.get('reduction_2_enabled', True)
-                st.session_state['age_reduction_2_age'] = loaded_scenario.get('age_83_threshold', 83)
-                st.session_state['age_reduction_2_pct'] = loaded_scenario.get('age_83_reduction', 10)
-                
-                # Reload lump sums
-                st.session_state.lump_sums = loaded_scenario.get('lump_sums', [])
-                st.session_state.lump_sum_withdrawals = loaded_scenario.get('lump_sum_withdrawals', [])
-                st.session_state['num_deposits'] = len(st.session_state.lump_sums)
-                st.session_state['num_withdrawals'] = len(st.session_state.lump_sum_withdrawals)
-                
-                # Clear dynamic keys
-                keys_to_clear = [k for k in list(st.session_state.keys()) 
-                                if k.startswith('lump_age_') or k.startswith('lump_amount_') 
-                                or k.startswith('lump_withdrawal_age_') or k.startswith('lump_withdrawal_amount_')]
-                for key in keys_to_clear:
-                    del st.session_state[key]
-                
-                st.info(f"📂 Auto-loaded: {first_scenario_name}")
-            
+            if imported_count > 0:
+                st.success(f"✅ Imported {imported_count} scenario(s)")
+                st.session_state.show_import_dialog = False
+                st.rerun()
+        
+        if st.button("Close", use_container_width=True):
+            st.session_state.show_import_dialog = False
             st.rerun()
     
-    # Calculate all scenarios button
-    if st.session_state.saved_scenarios and len(st.session_state.saved_scenarios) >= 2:
-        if st.button("⚡ Calculate All Scenarios", use_container_width=True, help="Pre-calculate all scenarios for quick comparison"):
-            with st.spinner(f"Calculating {len(st.session_state.saved_scenarios)} scenarios..."):
-                if 'calculated_scenarios' not in st.session_state:
-                    st.session_state.calculated_scenarios = {}
+    st.markdown("---")
+    
+    # Save Current Scenario
+    if st.session_state.active_scenario_name:
+        st.markdown("### 💾 Save Current")
+        
+        if st.button("💾 Save to Disk", use_container_width=True, help="Export current scenario"):
+            if 'inputs' in st.session_state:
+                from datetime import datetime
+                download_data = st.session_state.inputs.copy()
+                download_data['scenario_name'] = st.session_state.active_scenario_name
+                download_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                scenario_json = json.dumps(download_data, indent=2)
                 
-                success_count = 0
-                for scenario_name, scenario_inputs in st.session_state.saved_scenarios.items():
-                    try:
-                        calculator = RetirementCalculator(scenario_inputs)
-                        results = calculator.calculate()
-                        
-                        # Store calculated results
-                        st.session_state.calculated_scenarios[scenario_name] = {
-                            'inputs': scenario_inputs,
-                            'results': results,
-                            'projection_df': pd.DataFrame(results['projection'])
-                        }
-                        success_count += 1
-                    except Exception as e:
-                        st.error(f"❌ Error calculating {scenario_name}: {str(e)}")
+                safe_filename = st.session_state.active_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                download_filename = f"{safe_filename}.json"
                 
-                if success_count > 0:
-                    st.success(f"✅ Calculated {success_count} scenario(s)")
-                    st.info("💡 Go to 'Scenario Comparison' page to view results")
+                st.download_button(
+                    "⬇️ Download",
+                    data=scenario_json,
+                    file_name=download_filename,
+                    mime="application/json",
+                    use_container_width=True
+                )
+        
+        st.markdown("---")
     
+    # Loaded Scenarios Management
+    if scenario_list:
+        st.markdown("### 📋 Loaded Scenarios")
+        
+        for scenario_name in scenario_list:
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                is_active = scenario_name == st.session_state.active_scenario_name
+                prefix = "🎯 " if is_active else "📄 "
+                st.caption(f"{prefix}{scenario_name}")
+            with col2:
+                if st.button("🗑️", key=f"delete_{scenario_name}", help="Remove", use_container_width=True):
+                    del st.session_state.saved_scenarios[scenario_name]
+                    if st.session_state.active_scenario_name == scenario_name:
+                        st.session_state.active_scenario_name = None
+                    st.rerun()
+        
+        st.markdown("---")
+        
+        # Export All
+        if len(scenario_list) > 1:
+            if st.button("📦 Export All", use_container_width=True, help="Export all scenarios as ZIP"):
+                import io
+                import zipfile
+                
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    for name, scenario_data in st.session_state.saved_scenarios.items():
+                        safe_filename = name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                        json_str = json.dumps(scenario_data, indent=2)
+                        zip_file.writestr(f"{safe_filename}.json", json_str)
+                
+                zip_buffer.seek(0)
+                st.download_button(
+                    "💾 Download ZIP",
+                    data=zip_buffer.getvalue(),
+                    file_name="retirement_scenarios.zip",
+                    mime="application/zip",
+                    use_container_width=True
+                )
     
-    # Export all scenarios as ZIP
-    if st.session_state.saved_scenarios:
-        if st.button("📦 Export All Scenarios", use_container_width=True, help="Export all imported scenarios as a ZIP file"):
-            import io
-            import zipfile
-            
-            # Create ZIP file in memory
-            zip_buffer = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                for name, scenario_data in st.session_state.saved_scenarios.items():
-                    safe_filename = name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-                    json_str = json.dumps(scenario_data, indent=2)
-                    zip_file.writestr(f"{safe_filename}.json", json_str)
-            
-            zip_buffer.seek(0)
-            st.download_button(
-                "💾 Save ZIP",
-                data=zip_buffer.getvalue(),
-                file_name="retirement_scenarios.zip",
-                mime="application/zip",
-                use_container_width=True
-            )
+    st.markdown("---")
     
-    # Clear form button
-    if st.button("🔄 Clear Form", use_container_width=True, help="Reset all inputs"):
+    # Clear All button
+    if st.button("🔄 Clear All", use_container_width=True, help="Remove all scenarios and reset"):
+        st.session_state.saved_scenarios = {}
+        st.session_state.active_scenario_name = None
         st.session_state.loaded_scenario = None
         st.session_state.scenario_loaded = False
-        st.session_state.current_loaded_file = None
         st.session_state.current_scenario_name = ''
         
-        # Clear all widget keys
+        # Clear widget keys
         widget_keys = [
             'monthly_inv', 'gov_start', 'gov_amt', 'gov_idx', 
             'priv_start', 'priv_amt', 'priv_idx', 'pt_income', 'pt_idx',
@@ -629,28 +667,18 @@ with st.sidebar:
             if key in st.session_state:
                 del st.session_state[key]
         
-        # Clear lump sums
         if 'lump_sums' in st.session_state:
             del st.session_state.lump_sums
         if 'lump_sum_withdrawals' in st.session_state:
             del st.session_state.lump_sum_withdrawals
         
-        # Clear all dynamic lump sum keys
-        keys_to_clear = [k for k in st.session_state.keys() 
-                        if k.startswith('lump_age_') or k.startswith('lump_amount_') 
-                        or k.startswith('lump_withdrawal_age_') or k.startswith('lump_withdrawal_amount_')]
-        for key in keys_to_clear:
-            del st.session_state[key]
-        
-        st.success("✅ Cleared")
         st.rerun()
-    
-    # Status indicator
-    if st.session_state.get('current_scenario_name'):
-        st.caption(f"📋 Current: {st.session_state.current_scenario_name}")
 
-# Main input form
-st.header("Input Parameters")
+# Main content continues with input parameters
+st.title("🏖️ Retirement Planner")
+
+# Get current scenario name for display
+scenario_name = st.session_state.get('active_scenario_name', 'Unsaved Scenario')
 
 # Helper function to get default value
 def get_default(key, default_value):
