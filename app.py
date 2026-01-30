@@ -725,6 +725,7 @@ with tab1:
     with col4:
         retirement_year_one_income = st.number_input("Required Monthly Income (Today's $)", 0, 500000, get_default('retirement_year_one_income', 0), step=100, help="Monthly income needed in today's dollars")
         inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), help="Increase required income each year with inflation")
+        ignore_oas_clawback = st.checkbox("Income Splitting (Ignore OAS Clawback)", get_default('ignore_oas_clawback', False), help="Enable if using income splitting to avoid OAS clawback")
     
     st.markdown("### Financial Assumptions")
     col1, col2 = st.columns(2)
@@ -786,7 +787,7 @@ with tab3:
         oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start", value=get_default('oas_start_age', 65), help="Age when OAS starts (typically 65)")
     
     with col2:
-        monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 2000, step=50, key="oas_amt", value=get_default('monthly_oas', 0), help="Monthly OAS amount in today's dollars")
+        monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 2000, step=50, key="oas_amt", value=get_default('monthly_oas', 1484), help="Monthly OAS amount in today's dollars")
     
     with col3:
         oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx", value=get_default('oas_inflation_adjusted', True))
@@ -795,10 +796,10 @@ with tab3:
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start", value=get_default('cpp_start_age', 65), help="Age when CPP starts (60-70)")
+        cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start", value=get_default('cpp_start_age', 70), help="Age when CPP starts (60-70)")
     
     with col2:
-        monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 2000, step=50, key="cpp_amt", value=get_default('monthly_cpp', 0), help="Monthly CPP amount in today's dollars")
+        monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 3000, step=50, key="cpp_amt", value=get_default('monthly_cpp', 2000), help="Monthly CPP amount in today's dollars")
     
     with col3:
         cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx", value=get_default('cpp_inflation_adjusted', True))
@@ -985,6 +986,7 @@ inputs = {
     'part_time_inflation_adjusted': part_time_inflation_adjusted,
     'stop_investments_age': stop_investments_age,
     'inflation_adjustment_enabled': inflation_adjustment_enabled,
+    'ignore_oas_clawback': ignore_oas_clawback,
     'lump_sums': st.session_state.get('lump_sums', []),
     'lump_sum_withdrawals': st.session_state.get('lump_sum_withdrawals', [])
 }
