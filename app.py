@@ -1069,6 +1069,8 @@ if 'results' in st.session_state and st.session_state.results:
         'Total Monthly Income',
         'Required Income',
         'Monthly Shortfall',
+        'Monthly Surplus',
+        'Surplus Reinvested',
         'OAS',
         'CPP',
         'Employer Pension',
@@ -1093,7 +1095,8 @@ if 'results' in st.session_state and st.session_state.results:
     currency_cols = ['Investment Balance Start', 'Monthly Investment', 'Investment Withdrawal', 
                      'OAS', 'CPP', 'Employer Pension', 'Monthly Pension', 'Part-Time Income', 
                      'Lump Sum', 'Lump Sum Withdrawal', 
-                     'Required Income', 'Total Monthly Income', 'Monthly Shortfall', 'Income (Today\'s $)',
+                     'Required Income', 'Total Monthly Income', 'Monthly Shortfall', 'Monthly Surplus',
+                     'Surplus Reinvested', 'Income (Today\'s $)',
                      'Yearly Investment Return', 'Yearly Pension Amount', 'Investment Balance End',
                      'OAS Clawback', '4% Rule Amount', 'Withdrawal vs 4% Rule']
     
