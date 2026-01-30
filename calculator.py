@@ -167,17 +167,22 @@ class RetirementCalculator:
                     monthly_withdrawal = 0
                 
                 # STEP 2: Calculate OAS clawback based on total income (before withdrawal adjustment)
-                # OAS clawback threshold is $86,912 in 2024, clawback rate is 15%
-                OAS_CLAWBACK_THRESHOLD = 86912
+                # OAS clawback threshold is $95,323 in 2026, indexed to inflation annually
+                # Clawback rate is 15%
+                OAS_CLAWBACK_THRESHOLD_2026 = 95323
                 OAS_CLAWBACK_RATE = 0.15
+                
+                # Inflate threshold from 2026 to current year
+                years_from_2026 = age - current_age  # Years from now (2026 is current year)
+                oas_threshold_this_year = OAS_CLAWBACK_THRESHOLD_2026 * ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_2026)
                 
                 # Calculate total annual income for clawback purposes
                 annual_income = (monthly_from_other + monthly_withdrawal) * 12
                 
                 # Calculate OAS clawback (monthly amount)
                 oas_clawback_monthly = 0
-                if annual_income > OAS_CLAWBACK_THRESHOLD:
-                    excess_income = annual_income - OAS_CLAWBACK_THRESHOLD
+                if annual_income > oas_threshold_this_year:
+                    excess_income = annual_income - oas_threshold_this_year
                     annual_clawback = excess_income * OAS_CLAWBACK_RATE
                     # Clawback cannot exceed the OAS pension amount (government pension only)
                     max_clawback = pension * 12  # Annual OAS amount
@@ -409,7 +414,7 @@ class RetirementCalculator:
         
         if rrsp > 0 or lira > 0:
             advice_parts.append("**RRSP/LIRA Withdrawals:**")
-            advice_parts.append("- Age 65-71: Withdraw strategically to stay below OAS clawback threshold ($86,912 in 2024)")
+            advice_parts.append("- Age 65-71: Withdraw strategically to stay below OAS clawback threshold ($95,323 in 2026, indexed to inflation)")
             advice_parts.append("- Age 71: Convert RRSP to RRIF (mandatory)")
             advice_parts.append("- Age 72+: Take RRIF minimum withdrawals (starts at 5.4%, increases with age)")
             if lira > 0:
@@ -457,9 +462,9 @@ class RetirementCalculator:
         
         # OAS Clawback Management
         advice_parts.append("\n### 🏛️ OAS Clawback Management\n")
-        oas_threshold = 86912  # 2024
-        oas_max = 90997  # Full clawback
-        advice_parts.append(f"**OAS Clawback Thresholds (2024):**")
+        oas_threshold = 95323  # 2026
+        oas_max = 176708  # Full clawback (2026)
+        advice_parts.append(f"**OAS Clawback Thresholds (2026, indexed to inflation):**")
         advice_parts.append(f"- Clawback starts: ${oas_threshold:,}")
         advice_parts.append(f"- Full clawback: ${oas_max:,}")
         advice_parts.append(f"- Rate: 15% of income above threshold\n")
