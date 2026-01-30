@@ -46,6 +46,7 @@ class RetirementCalculator:
                 'Part-Time Income': 0,
                 'Lump Sum': 0,
                 'Lump Sum Withdrawal': 0,
+                'OAS Clawback': 0,
                 '4% Rule Amount': 0,
                 'Withdrawal vs 4% Rule': 0,
                 '% Over 4% Rule': 0
@@ -172,6 +173,30 @@ class RetirementCalculator:
                     monthly_withdrawal = 0
                 
                 year_data['Total Monthly Income'] = round(monthly_from_other + monthly_withdrawal, 2)
+                
+                # Calculate OAS clawback based on total annual income
+                # OAS clawback threshold is $86,912 in 2024, clawback rate is 15%
+                # Full clawback occurs at $142,609 (2024)
+                OAS_CLAWBACK_THRESHOLD = 86912
+                OAS_CLAWBACK_RATE = 0.15
+                
+                # Calculate total annual income for clawback purposes
+                annual_income = (monthly_from_other + monthly_withdrawal) * 12
+                
+                # Calculate OAS clawback (monthly amount)
+                oas_clawback_monthly = 0
+                if annual_income > OAS_CLAWBACK_THRESHOLD:
+                    excess_income = annual_income - OAS_CLAWBACK_THRESHOLD
+                    annual_clawback = excess_income * OAS_CLAWBACK_RATE
+                    # Clawback cannot exceed the OAS pension amount
+                    max_clawback = pension * 12  # Annual OAS amount
+                    annual_clawback = min(annual_clawback, max_clawback)
+                    oas_clawback_monthly = annual_clawback / 12
+                
+                year_data['OAS Clawback'] = round(oas_clawback_monthly, 2)
+                
+                # Reduce Total Monthly Income by clawback
+                year_data['Total Monthly Income'] = round(monthly_from_other + monthly_withdrawal - oas_clawback_monthly, 2)
                 
                 # Calculate monthly shortfall (only show if positive = shortfall exists)
                 monthly_shortfall = required_income - (monthly_from_other + monthly_withdrawal)

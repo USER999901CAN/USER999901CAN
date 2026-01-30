@@ -361,9 +361,78 @@ st.markdown("Plan your retirement with pension, and investment projections")
 with st.sidebar:
     st.header("💾 Scenarios")
     
-    # Initialize saved scenarios in session state
+    # Initialize saved scenarios in session state (for uploaded scenarios)
     if 'saved_scenarios' not in st.session_state:
         st.session_state.saved_scenarios = {}
+    
+    # Load imported scenario dropdown
+    if st.session_state.saved_scenarios:
+        st.markdown("#### 📂 Load Imported Scenario")
+        scenario_options = ["-- Select a scenario --"] + list(st.session_state.saved_scenarios.keys())
+        selected_scenario = st.selectbox(
+            "Choose scenario to load:",
+            options=scenario_options,
+            key="scenario_selector",
+            help="Select an imported scenario to populate input parameters"
+        )
+        
+        if selected_scenario != "-- Select a scenario --":
+            if st.button("📥 Load Selected Scenario", use_container_width=True):
+                loaded_scenario = st.session_state.saved_scenarios[selected_scenario]
+                
+                # Set defaults for any missing fields
+                loaded_scenario.setdefault('reduction_1_enabled', True)
+                loaded_scenario.setdefault('reduction_2_enabled', True)
+                loaded_scenario.setdefault('age_77_threshold', 77)
+                loaded_scenario.setdefault('age_83_threshold', 83)
+                loaded_scenario.setdefault('age_77_reduction', 10)
+                loaded_scenario.setdefault('age_83_reduction', 10)
+                loaded_scenario.setdefault('lump_sums', [])
+                loaded_scenario.setdefault('lump_sum_withdrawals', [])
+                loaded_scenario.setdefault('inflation_adjustment_enabled', True)
+                loaded_scenario.setdefault('pension_inflation_adjusted', True)
+                loaded_scenario.setdefault('private_pension_inflation_adjusted', True)
+                
+                # Store loaded scenario
+                st.session_state.loaded_scenario = loaded_scenario
+                st.session_state.scenario_loaded = True
+                st.session_state.current_loaded_file = selected_scenario
+                st.session_state.current_scenario_name = selected_scenario
+                
+                # Set widget values
+                st.session_state['monthly_inv'] = loaded_scenario.get('monthly_investments', 0)
+                st.session_state['gov_start'] = loaded_scenario.get('pension_start_age', 65)
+                st.session_state['gov_amt'] = loaded_scenario.get('monthly_pension', 0)
+                st.session_state['gov_idx'] = loaded_scenario.get('pension_inflation_adjusted', True)
+                st.session_state['priv_start'] = loaded_scenario.get('private_pension_start_age', 65)
+                st.session_state['priv_amt'] = loaded_scenario.get('monthly_private_pension', 0)
+                st.session_state['priv_idx'] = loaded_scenario.get('private_pension_inflation_adjusted', True)
+                st.session_state['pt_income'] = loaded_scenario.get('part_time_income', 0)
+                st.session_state['pt_idx'] = loaded_scenario.get('part_time_inflation_adjusted', False)
+                st.session_state['reduction_1_enabled'] = loaded_scenario.get('reduction_1_enabled', True)
+                st.session_state['age_reduction_1_age'] = loaded_scenario.get('age_77_threshold', 77)
+                st.session_state['age_reduction_1_pct'] = loaded_scenario.get('age_77_reduction', 10)
+                st.session_state['reduction_2_enabled'] = loaded_scenario.get('reduction_2_enabled', True)
+                st.session_state['age_reduction_2_age'] = loaded_scenario.get('age_83_threshold', 83)
+                st.session_state['age_reduction_2_pct'] = loaded_scenario.get('age_83_reduction', 10)
+                
+                # Reload lump sums
+                st.session_state.lump_sums = loaded_scenario.get('lump_sums', [])
+                st.session_state.lump_sum_withdrawals = loaded_scenario.get('lump_sum_withdrawals', [])
+                st.session_state['num_deposits'] = len(st.session_state.lump_sums)
+                st.session_state['num_withdrawals'] = len(st.session_state.lump_sum_withdrawals)
+                
+                # Clear dynamic keys
+                keys_to_clear = [k for k in list(st.session_state.keys()) 
+                                if k.startswith('lump_age_') or k.startswith('lump_amount_') 
+                                or k.startswith('lump_withdrawal_age_') or k.startswith('lump_withdrawal_amount_')]
+                for key in keys_to_clear:
+                    del st.session_state[key]
+                
+                st.success(f"✅ Loaded: {selected_scenario}")
+                st.rerun()
+        
+        st.markdown("---")
     
     # Scenario name input
     scenario_name = st.text_input(
@@ -373,23 +442,7 @@ with st.sidebar:
         help="Give this scenario a memorable name"
     )
     
-    # Save scenario button
-    if st.button("💾 Save Scenario", use_container_width=True, disabled=not scenario_name, help="Save scenario to memory"):
-        if 'inputs' in st.session_state and scenario_name:
-            from datetime import datetime
-            download_data = st.session_state.inputs.copy()
-            download_data['scenario_name'] = scenario_name
-            download_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            
-            # Save to memory
-            st.session_state.saved_scenarios[scenario_name] = download_data.copy()
-            st.session_state.current_scenario_name = scenario_name
-            st.success(f"✅ Saved '{scenario_name}'")
-    
-    if not scenario_name:
-        st.caption("⚠️ Enter a scenario name")
-    
-    # Download scenario button (separate from save)
+    # Export scenario button
     if 'inputs' in st.session_state and scenario_name:
         from datetime import datetime
         download_data = st.session_state.inputs.copy()
@@ -401,96 +454,24 @@ with st.sidebar:
         safe_filename = scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
         download_filename = f"{safe_filename}.json"
         
-        # Download button
+        # Export button
         st.download_button(
-            "⬇️ Download Scenario",
+            "📤 Export Scenario",
             data=scenario_json,
             file_name=download_filename,
             mime="application/json",
             use_container_width=True,
-            help="Download scenario file to your computer"
+            help="Export scenario file to your computer"
         )
-    
-    # Show saved scenarios
-    if st.session_state.saved_scenarios:
-        st.markdown("---")
-        st.caption(f"**Saved Scenarios ({len(st.session_state.saved_scenarios)}):**")
-        
-        # List saved scenarios with load/delete buttons
-        for name in list(st.session_state.saved_scenarios.keys()):
-            col1, col2, col3 = st.columns([3, 1, 1])
-            with col1:
-                st.caption(f"📋 {name}")
-            with col2:
-                if st.button("📂", key=f"load_{name}", help="Load", use_container_width=True):
-                    loaded_scenario = st.session_state.saved_scenarios[name]
-                    
-                    # Set defaults for any missing fields
-                    loaded_scenario.setdefault('reduction_1_enabled', True)
-                    loaded_scenario.setdefault('reduction_2_enabled', True)
-                    loaded_scenario.setdefault('age_77_threshold', 77)
-                    loaded_scenario.setdefault('age_83_threshold', 83)
-                    loaded_scenario.setdefault('age_77_reduction', 10)
-                    loaded_scenario.setdefault('age_83_reduction', 10)
-                    loaded_scenario.setdefault('lump_sums', [])
-                    loaded_scenario.setdefault('lump_sum_withdrawals', [])
-                    loaded_scenario.setdefault('inflation_adjustment_enabled', True)
-                    loaded_scenario.setdefault('pension_inflation_adjusted', True)
-                    loaded_scenario.setdefault('private_pension_inflation_adjusted', True)
-                    
-                    # Store loaded scenario
-                    st.session_state.loaded_scenario = loaded_scenario
-                    st.session_state.scenario_loaded = True
-                    st.session_state.current_loaded_file = name
-                    st.session_state.current_scenario_name = name
-                    
-                    # Set widget values
-                    st.session_state['monthly_inv'] = loaded_scenario.get('monthly_investments', 0)
-                    st.session_state['gov_start'] = loaded_scenario.get('pension_start_age', 65)
-                    st.session_state['gov_amt'] = loaded_scenario.get('monthly_pension', 0)
-                    st.session_state['gov_idx'] = loaded_scenario.get('pension_inflation_adjusted', True)
-                    st.session_state['priv_start'] = loaded_scenario.get('private_pension_start_age', 65)
-                    st.session_state['priv_amt'] = loaded_scenario.get('monthly_private_pension', 0)
-                    st.session_state['priv_idx'] = loaded_scenario.get('private_pension_inflation_adjusted', True)
-                    st.session_state['pt_income'] = loaded_scenario.get('part_time_income', 0)
-                    st.session_state['pt_idx'] = loaded_scenario.get('part_time_inflation_adjusted', False)
-                    st.session_state['reduction_1_enabled'] = loaded_scenario.get('reduction_1_enabled', True)
-                    st.session_state['age_reduction_1_age'] = loaded_scenario.get('age_77_threshold', 77)
-                    st.session_state['age_reduction_1_pct'] = loaded_scenario.get('age_77_reduction', 10)
-                    st.session_state['reduction_2_enabled'] = loaded_scenario.get('reduction_2_enabled', True)
-                    st.session_state['age_reduction_2_age'] = loaded_scenario.get('age_83_threshold', 83)
-                    st.session_state['age_reduction_2_pct'] = loaded_scenario.get('age_83_reduction', 10)
-                    
-                    # Reload lump sums
-                    st.session_state.lump_sums = loaded_scenario.get('lump_sums', [])
-                    st.session_state.lump_sum_withdrawals = loaded_scenario.get('lump_sum_withdrawals', [])
-                    st.session_state['num_deposits'] = len(st.session_state.lump_sums)
-                    st.session_state['num_withdrawals'] = len(st.session_state.lump_sum_withdrawals)
-                    
-                    # Clear dynamic keys
-                    keys_to_clear = [k for k in list(st.session_state.keys()) 
-                                    if k.startswith('lump_age_') or k.startswith('lump_amount_') 
-                                    or k.startswith('lump_withdrawal_age_') or k.startswith('lump_withdrawal_amount_')]
-                    for key in keys_to_clear:
-                        del st.session_state[key]
-                    
-                    st.rerun()
-            
-            with col3:
-                if st.button("🗑️", key=f"delete_{name}", help="Delete", use_container_width=True):
-                    del st.session_state.saved_scenarios[name]
-                    if st.session_state.get('current_scenario_name') == name:
-                        st.session_state.current_scenario_name = ''
-                    st.rerun()
     
     st.markdown("---")
     
-    # Upload multiple scenarios
+    # Import multiple scenarios
     uploaded_files = st.file_uploader(
-        "📂 Upload Scenarios",
+        "📥 Import Scenarios",
         type=['json'],
         accept_multiple_files=True,
-        help="Upload one or more scenario JSON files"
+        help="Import one or more scenario JSON files"
     )
     
     if uploaded_files:
@@ -606,9 +587,9 @@ with st.sidebar:
                     st.info("💡 Go to 'Scenario Comparison' page to view results")
     
     
-    # Download all scenarios as ZIP
+    # Export all scenarios as ZIP
     if st.session_state.saved_scenarios:
-        if st.button("📦 Download All (ZIP)", use_container_width=True, help="Download all saved scenarios as a ZIP file"):
+        if st.button("📦 Export All Scenarios", use_container_width=True, help="Export all imported scenarios as a ZIP file"):
             import io
             import zipfile
             
@@ -989,7 +970,10 @@ if 'results' in st.session_state and st.session_state.results:
     # Check if there are any monthly shortfalls
     has_shortfall = (df['Monthly Shortfall'] > 0).any() if 'Monthly Shortfall' in df.columns else False
     
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    # Check if there are any OAS clawbacks
+    has_oas_clawback = (df['OAS Clawback'] > 0).any() if 'OAS Clawback' in df.columns else False
+    
+    col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
     with col1:
         st.metric("Years Until Retirement", retirement_age - current_age)
     with col2:
@@ -1002,9 +986,23 @@ if 'results' in st.session_state and st.session_state.results:
         st.metric("Balance at Age 100", f"${results['final_balance']:,.0f}")
     with col6:
         st.metric("Any Monthly Shortfall?", "Yes" if has_shortfall else "No")
+    with col7:
+        st.metric("OAS Clawback?", "Yes" if has_oas_clawback else "No")
     
     # Projection table
     st.subheader("Year-by-Year Projection")
+    
+    # Add legend for row highlighting
+    legend_parts = []
+    if has_shortfall:
+        legend_parts.append("🔴 Red = Monthly shortfall")
+    legend_parts.append("🟡 Yellow = Withdrawal exceeds 4% rule")
+    if has_oas_clawback:
+        legend_parts.append("🔴 Red text in OAS Clawback column = Income above $86,912 threshold")
+    
+    if legend_parts:
+        st.caption(" | ".join(legend_parts))
+    
     df = pd.DataFrame(results['projection'])
     
     # Explicitly set column order
@@ -1016,14 +1014,15 @@ if 'results' in st.session_state and st.session_state.results:
         'Total Monthly Income',
         'Required Income',
         'Monthly Shortfall',
-        'Monthly Investment',
-        'Investment Withdrawal',
-        'Yearly Investment Return',
         'Monthly Pension',
-        'Yearly Pension Amount',
+        'Investment Withdrawal',
         'Part-Time Income',
+        'Monthly Investment',
+        'Yearly Investment Return',
+        'Yearly Pension Amount',
         'Lump Sum',
         'Lump Sum Withdrawal',
+        'OAS Clawback',
         '4% Rule Amount',
         'Withdrawal vs 4% Rule',
         '% Over 4% Rule'
@@ -1037,7 +1036,7 @@ if 'results' in st.session_state and st.session_state.results:
                      'Monthly Pension', 'Part-Time Income', 'Lump Sum', 'Lump Sum Withdrawal', 
                      'Required Income', 'Total Monthly Income', 'Monthly Shortfall', 'Income (Today\'s $)',
                      'Yearly Investment Return', 'Yearly Pension Amount', 'Investment Balance End',
-                     '4% Rule Amount', 'Withdrawal vs 4% Rule']
+                     'OAS Clawback', '4% Rule Amount', 'Withdrawal vs 4% Rule']
     
     df_display = df.copy()
     for col in currency_cols:
@@ -1050,14 +1049,14 @@ if 'results' in st.session_state and st.session_state.results:
             lambda x: f"{x:,.1f}%" if x != 0 else "-"
         )
     
-    # Add styling to highlight rows where withdrawal exceeds 4% rule or has shortfall
+    # Add styling to highlight rows where withdrawal exceeds 4% rule or has shortfall, and red text for OAS clawback
     def highlight_issues(row):
         styles = [''] * len(row)
         
         has_shortfall = False
         has_4pct_violation = False
         
-        # Check for shortfall (darker red - more critical)
+        # Check for shortfall (darker red - most critical)
         if 'Monthly Shortfall' in row.index:
             try:
                 shortfall_str = str(row['Monthly Shortfall']).replace('$', '').replace(',', '')
@@ -1077,13 +1076,24 @@ if 'results' in st.session_state and st.session_state.results:
             except (ValueError, AttributeError):
                 pass
         
-        # Apply colors based on conditions
+        # Apply row background colors based on conditions
         if has_shortfall and has_4pct_violation:
-            return ['background-color: #ffcc99'] * len(row)  # Orange for both issues
+            styles = ['background-color: #ffcc99'] * len(row)  # Orange for both critical issues
         elif has_shortfall:
-            return ['background-color: #ffcccc'] * len(row)  # Red for shortfall only
+            styles = ['background-color: #ffcccc'] * len(row)  # Red for shortfall only
         elif has_4pct_violation:
-            return ['background-color: #ffffcc'] * len(row)  # Yellow for 4% rule only
+            styles = ['background-color: #ffffcc'] * len(row)  # Yellow for 4% rule only
+        
+        # Apply red text color to OAS Clawback column if clawback exists
+        if 'OAS Clawback' in row.index:
+            try:
+                clawback_str = str(row['OAS Clawback']).replace('$', '').replace(',', '')
+                clawback_val = float(clawback_str)
+                if clawback_val > 0:
+                    oas_idx = row.index.get_loc('OAS Clawback')
+                    styles[oas_idx] = styles[oas_idx] + '; color: red; font-weight: bold'
+            except (ValueError, AttributeError):
+                pass
         
         return styles
     
@@ -1131,18 +1141,6 @@ if 'results' in st.session_state and st.session_state.results:
                 if row['Monthly Shortfall'] > 0 and row['Withdrawal vs 4% Rule'] > 0:
                     has_both = True
                     break
-    
-    # Show highlighting explanation only if there are highlighted rows
-    if has_shortfall or has_4pct_violation:
-        highlight_messages = []
-        if has_both:
-            highlight_messages.append("🟠 **Orange rows** = Both shortfall AND over 4% rule (critical)")
-        if has_shortfall:
-            highlight_messages.append("🔴 **Red rows** = Monthly shortfall exists")
-        if has_4pct_violation:
-            highlight_messages.append("🟡 **Yellow rows** = Withdrawing more than 4% rule")
-        
-        st.caption(" | ".join(highlight_messages))
     
     # Add explanation of 4% rule columns
     with st.expander("ℹ️ Understanding the 4% Rule Comparison & Today's Dollars"):
