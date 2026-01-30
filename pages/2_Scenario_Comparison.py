@@ -138,6 +138,48 @@ if st.button("🔄 Compare Scenarios", type="primary"):
                         failed_scenarios.append(f"{scenario_name} (not found in session)")
                         continue
                     
+                    # Migrate old field names to new couple-mode field names
+                    inputs = inputs.copy()  # Don't modify original
+                    
+                    # Check if this is an old scenario (has pension_start_age instead of oas_start_age)
+                    if 'pension_start_age' in inputs and 'oas_start_age' not in inputs:
+                        # Migrate OAS fields
+                        inputs['oas_start_age'] = inputs.get('pension_start_age', 65)
+                        inputs['monthly_oas'] = inputs.get('monthly_pension', 0)
+                        inputs['oas_inflation_adjusted'] = inputs.get('pension_inflation_adjusted', True)
+                        
+                        # Set Person 2 to defaults (old scenarios were single-person)
+                        inputs['oas_start_age_p2'] = 999
+                        inputs['monthly_oas_p2'] = 0
+                        inputs['oas_inflation_adjusted_p2'] = True
+                        
+                        # Migrate CPP fields (old scenarios didn't have separate CPP)
+                        # Assume CPP was included in the pension amount, so set to 0
+                        inputs['cpp_start_age'] = 70
+                        inputs['monthly_cpp'] = 0
+                        inputs['cpp_inflation_adjusted'] = True
+                        inputs['cpp_start_age_p2'] = 999
+                        inputs['monthly_cpp_p2'] = 0
+                        inputs['cpp_inflation_adjusted_p2'] = True
+                        
+                        # Couple mode defaults
+                        inputs.setdefault('couple_mode', False)
+                    
+                    # Ensure all required fields exist with defaults
+                    inputs.setdefault('oas_start_age', 65)
+                    inputs.setdefault('monthly_oas', 0)
+                    inputs.setdefault('oas_inflation_adjusted', True)
+                    inputs.setdefault('oas_start_age_p2', 999)
+                    inputs.setdefault('monthly_oas_p2', 0)
+                    inputs.setdefault('oas_inflation_adjusted_p2', True)
+                    inputs.setdefault('cpp_start_age', 70)
+                    inputs.setdefault('monthly_cpp', 0)
+                    inputs.setdefault('cpp_inflation_adjusted', True)
+                    inputs.setdefault('cpp_start_age_p2', 999)
+                    inputs.setdefault('monthly_cpp_p2', 0)
+                    inputs.setdefault('cpp_inflation_adjusted_p2', True)
+                    inputs.setdefault('couple_mode', False)
+                    
                     # Calculate results
                     calculator = RetirementCalculator(inputs)
                     results = calculator.calculate()
