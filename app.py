@@ -761,7 +761,10 @@ with tab2:
         monthly_investments = st.number_input("Monthly Contribution Amount ($)", 0, 50000, step=100, key="monthly_inv", help="Amount you'll contribute each month")
     
     with col2:
-        stop_investments_age = st.number_input("Stop Contributions at Age", current_age, retirement_age, get_default('stop_investments_age', retirement_age), help="Age when you'll stop making monthly contributions")
+        # Clamp default value to be within valid range
+        default_stop_age = get_default('stop_investments_age', retirement_age)
+        default_stop_age = max(current_age, min(default_stop_age, retirement_age))
+        stop_investments_age = st.number_input("Stop Contributions at Age", current_age, retirement_age, default_stop_age, help="Age when you'll stop making monthly contributions")
 
 with tab3:
     st.markdown("### Government Pension (CPP/OAS)")
@@ -913,7 +916,10 @@ with tab4:
         
         c1, c2 = st.columns(2)
         with c1:
-            age_77_threshold = st.number_input("At Age", retirement_age, 100, key="age_reduction_1_age", disabled=not reduction_1_enabled, value=get_default('age_77_threshold', 77))
+            # Clamp default value to be within valid range
+            default_age_77 = get_default('age_77_threshold', 77)
+            default_age_77 = max(retirement_age, min(default_age_77, 100))
+            age_77_threshold = st.number_input("At Age", retirement_age, 100, key="age_reduction_1_age", disabled=not reduction_1_enabled, value=default_age_77)
         with c2:
             age_77_reduction = st.number_input("Reduce By (%)", 0, 100, key="age_reduction_1_pct", disabled=not reduction_1_enabled, value=get_default('age_77_reduction', 10))
     
@@ -923,7 +929,10 @@ with tab4:
         
         c1, c2 = st.columns(2)
         with c1:
-            age_83_threshold = st.number_input("At Age", retirement_age, 100, key="age_reduction_2_age", disabled=not reduction_2_enabled, value=get_default('age_83_threshold', 83))
+            # Clamp default value to be within valid range
+            default_age_83 = get_default('age_83_threshold', 83)
+            default_age_83 = max(retirement_age, min(default_age_83, 100))
+            age_83_threshold = st.number_input("At Age", retirement_age, 100, key="age_reduction_2_age", disabled=not reduction_2_enabled, value=default_age_83)
         with c2:
             age_83_reduction = st.number_input("Reduce By (%)", 0, 100, key="age_reduction_2_pct", disabled=not reduction_2_enabled, value=get_default('age_83_reduction', 10))
 
