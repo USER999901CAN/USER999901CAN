@@ -180,6 +180,18 @@ if st.button("🔄 Compare Scenarios", type="primary"):
                     inputs.setdefault('cpp_inflation_adjusted_p2', True)
                     inputs.setdefault('couple_mode', False)
                     
+                    # CRITICAL: Ensure current_age exists
+                    if 'current_age' not in inputs or inputs['current_age'] is None:
+                        # Try to calculate from birthdate
+                        if inputs.get('birthdate'):
+                            from datetime import datetime
+                            birthdate = datetime.strptime(inputs['birthdate'], '%Y-%m-%d')
+                            today = datetime.today()
+                            inputs['current_age'] = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+                        else:
+                            # Use retirement_age - 5 as a reasonable default
+                            inputs['current_age'] = inputs.get('retirement_age', 65) - 5
+                    
                     # Calculate results
                     calculator = RetirementCalculator(inputs)
                     results = calculator.calculate()
