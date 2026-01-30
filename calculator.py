@@ -44,8 +44,14 @@ class RetirementCalculator:
                 'Investment Balance End': year_start_balance,
                 'Yearly Investment Return': 0,
                 'OAS': 0,
+                'OAS P1': 0,
+                'OAS P2': 0,
                 'CPP': 0,
+                'CPP P1': 0,
+                'CPP P2': 0,
                 'Employer Pension': 0,
+                'Employer Pension P1': 0,
+                'Employer Pension P2': 0,
                 'Monthly Pension': 0,
                 'Yearly Pension Amount': 0,
                 'Part-Time Income': 0,
@@ -127,41 +133,81 @@ class RetirementCalculator:
                 else:
                     part_time = 0
                 
-                # Old Age Security (OAS)
+                # Old Age Security (OAS) - Person 1
                 # OAS amount is entered in today's dollars, so inflate from current age
-                oas = 0
+                oas_p1 = 0
                 if age >= self.inputs.get('oas_start_age', 65):
-                    oas = self.inputs.get('monthly_oas', 0)
+                    oas_p1 = self.inputs.get('monthly_oas', 0)
                     if self.inputs.get('oas_inflation_adjusted', True):
                         # Inflate from current age to this age
                         years_from_now = age - current_age
-                        oas *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                        oas_p1 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
-                # Store OAS before clawback for clawback calculation
+                # Old Age Security (OAS) - Person 2
+                oas_p2 = 0
+                if age >= self.inputs.get('oas_start_age_p2', 999):
+                    oas_p2 = self.inputs.get('monthly_oas_p2', 0)
+                    if self.inputs.get('oas_inflation_adjusted_p2', True):
+                        # Inflate from current age to this age
+                        years_from_now = age - current_age
+                        oas_p2 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                
+                # Total OAS before clawback
+                oas = oas_p1 + oas_p2
                 oas_before_clawback = oas
                 
-                # Canada Pension Plan (CPP)
+                # Store individual OAS amounts
+                year_data['OAS P1'] = round(oas_p1, 2)
+                year_data['OAS P2'] = round(oas_p2, 2)
+                
+                # Canada Pension Plan (CPP) - Person 1
                 # CPP amount is entered in today's dollars, so inflate from current age
-                cpp = 0
+                cpp_p1 = 0
                 if age >= self.inputs.get('cpp_start_age', 65):
-                    cpp = self.inputs.get('monthly_cpp', 0)
+                    cpp_p1 = self.inputs.get('monthly_cpp', 0)
                     if self.inputs.get('cpp_inflation_adjusted', True):
                         # Inflate from current age to this age
                         years_from_now = age - current_age
-                        cpp *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                        cpp_p1 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
+                # Canada Pension Plan (CPP) - Person 2
+                cpp_p2 = 0
+                if age >= self.inputs.get('cpp_start_age_p2', 999):
+                    cpp_p2 = self.inputs.get('monthly_cpp_p2', 0)
+                    if self.inputs.get('cpp_inflation_adjusted_p2', True):
+                        # Inflate from current age to this age
+                        years_from_now = age - current_age
+                        cpp_p2 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                
+                # Total CPP
+                cpp = cpp_p1 + cpp_p2
                 year_data['CPP'] = round(cpp, 2)
+                year_data['CPP P1'] = round(cpp_p1, 2)
+                year_data['CPP P2'] = round(cpp_p2, 2)
                 
-                # Employer/Private pension
-                employer_pension = 0
+                # Employer/Private pension - Person 1
+                employer_pension_p1 = 0
                 if age >= self.inputs.get('private_pension_start_age', 999):
-                    employer_pension = self.inputs.get('monthly_private_pension', 0)
+                    employer_pension_p1 = self.inputs.get('monthly_private_pension', 0)
                     if self.inputs.get('private_pension_inflation_adjusted', False):
                         # Inflate from current age to this age
                         years_from_now = age - current_age
-                        employer_pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                        employer_pension_p1 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
+                # Employer/Private pension - Person 2
+                employer_pension_p2 = 0
+                if age >= self.inputs.get('private_pension_start_age_p2', 999):
+                    employer_pension_p2 = self.inputs.get('monthly_private_pension_p2', 0)
+                    if self.inputs.get('private_pension_inflation_adjusted_p2', False):
+                        # Inflate from current age to this age
+                        years_from_now = age - current_age
+                        employer_pension_p2 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                
+                # Total Employer Pension
+                employer_pension = employer_pension_p1 + employer_pension_p2
                 year_data['Employer Pension'] = round(employer_pension, 2)
+                year_data['Employer Pension P1'] = round(employer_pension_p1, 2)
+                year_data['Employer Pension P2'] = round(employer_pension_p2, 2)
                 
                 # Total pension (OAS + CPP + Employer) - will be adjusted for OAS clawback later
                 total_pension_before_clawback = oas_before_clawback + cpp + employer_pension

@@ -780,41 +780,196 @@ with tab2:
         calculate_button_tab2 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab2")
 
 with tab3:
+    # Couple mode toggle at the top
+    st.markdown("### Planning Mode")
+    couple_mode = st.checkbox("👫 Couple Mode (Separate Pensions)", 
+                              value=get_default('couple_mode', False),
+                              help="Enable to enter separate pension amounts for each person")
+    
+    st.markdown("---")
+    
     st.markdown("### Old Age Security (OAS)")
-    col1, col2, col3 = st.columns(3)
     
-    with col1:
-        oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start", value=get_default('oas_start_age', 65), help="Age when OAS starts (typically 65)")
-    
-    with col2:
-        monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 2000, step=50, key="oas_amt", value=get_default('monthly_oas', 1484), help="Monthly OAS amount in today's dollars")
-    
-    with col3:
-        oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx", value=get_default('oas_inflation_adjusted', True))
+    if couple_mode:
+        # Person 1 OAS
+        st.markdown("#### Person 1")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start_p1", 
+                                           value=get_default('oas_start_age', 65), 
+                                           help="Age when OAS starts (typically 65)")
+        
+        with col2:
+            monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p1", 
+                                         value=get_default('monthly_oas', 1484), 
+                                         help="Monthly OAS amount in today's dollars")
+        
+        with col3:
+            oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx_p1", 
+                                                value=get_default('oas_inflation_adjusted', True))
+        
+        # Person 2 OAS
+        st.markdown("#### Person 2")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            oas_start_age_p2 = st.number_input("Start Age", 65, 70, key="oas_start_p2", 
+                                              value=get_default('oas_start_age_p2', 65), 
+                                              help="Age when OAS starts (typically 65)")
+        
+        with col2:
+            monthly_oas_p2 = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p2", 
+                                            value=get_default('monthly_oas_p2', 1484), 
+                                            help="Monthly OAS amount in today's dollars")
+        
+        with col3:
+            oas_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="oas_idx_p2", 
+                                                   value=get_default('oas_inflation_adjusted_p2', True))
+    else:
+        # Single person OAS
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start", 
+                                           value=get_default('oas_start_age', 65), 
+                                           help="Age when OAS starts (typically 65)")
+        
+        with col2:
+            monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt", 
+                                         value=get_default('monthly_oas', 1484), 
+                                         help="Monthly OAS amount in today's dollars")
+        
+        with col3:
+            oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx", 
+                                                value=get_default('oas_inflation_adjusted', True))
+        
+        # Set Person 2 values to 0 for single mode
+        oas_start_age_p2 = 999
+        monthly_oas_p2 = 0
+        oas_inflation_adjusted_p2 = True
     
     st.markdown("### Canada Pension Plan (CPP)")
-    col1, col2, col3 = st.columns(3)
     
-    with col1:
-        cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start", value=get_default('cpp_start_age', 70), help="Age when CPP starts (60-70)")
-    
-    with col2:
-        monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 3000, step=50, key="cpp_amt", value=get_default('monthly_cpp', 2000), help="Monthly CPP amount in today's dollars")
-    
-    with col3:
-        cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx", value=get_default('cpp_inflation_adjusted', True))
+    if couple_mode:
+        # Person 1 CPP
+        st.markdown("#### Person 1")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start_p1", 
+                                           value=get_default('cpp_start_age', 70), 
+                                           help="Age when CPP starts (60-70)")
+        
+        with col2:
+            monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p1", 
+                                         value=get_default('monthly_cpp', 2000), 
+                                         help="Monthly CPP amount in today's dollars")
+        
+        with col3:
+            cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx_p1", 
+                                                value=get_default('cpp_inflation_adjusted', True))
+        
+        # Person 2 CPP
+        st.markdown("#### Person 2")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            cpp_start_age_p2 = st.number_input("Start Age", 60, 70, key="cpp_start_p2", 
+                                              value=get_default('cpp_start_age_p2', 70), 
+                                              help="Age when CPP starts (60-70)")
+        
+        with col2:
+            monthly_cpp_p2 = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p2", 
+                                            value=get_default('monthly_cpp_p2', 2000), 
+                                            help="Monthly CPP amount in today's dollars")
+        
+        with col3:
+            cpp_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="cpp_idx_p2", 
+                                                   value=get_default('cpp_inflation_adjusted_p2', True))
+    else:
+        # Single person CPP
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start", 
+                                           value=get_default('cpp_start_age', 70), 
+                                           help="Age when CPP starts (60-70)")
+        
+        with col2:
+            monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt", 
+                                         value=get_default('monthly_cpp', 2000), 
+                                         help="Monthly CPP amount in today's dollars")
+        
+        with col3:
+            cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx", 
+                                                value=get_default('cpp_inflation_adjusted', True))
+        
+        # Set Person 2 values to 0 for single mode
+        cpp_start_age_p2 = 999
+        monthly_cpp_p2 = 0
+        cpp_inflation_adjusted_p2 = True
     
     st.markdown("### Employer/Private Pension")
-    col1, col2, col3 = st.columns(3)
     
-    with col1:
-        private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start", help="Age when employer pension starts")
-    
-    with col2:
-        monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt", help="Monthly pension amount in today's dollars")
-    
-    with col3:
-        private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", value=get_default('private_pension_inflation_adjusted', True))
+    if couple_mode:
+        # Person 1 Employer Pension
+        st.markdown("#### Person 1")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start_p1", 
+                                                       value=get_default('private_pension_start_age', 999),
+                                                       help="Age when employer pension starts")
+        
+        with col2:
+            monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt_p1", 
+                                                     value=get_default('monthly_private_pension', 0),
+                                                     help="Monthly pension amount in today's dollars")
+        
+        with col3:
+            private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx_p1", 
+                                                            value=get_default('private_pension_inflation_adjusted', True))
+        
+        # Person 2 Employer Pension
+        st.markdown("#### Person 2")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            private_pension_start_age_p2 = st.number_input("Start Age", 50, 100, key="priv_start_p2", 
+                                                          value=get_default('private_pension_start_age_p2', 999),
+                                                          help="Age when employer pension starts")
+        
+        with col2:
+            monthly_private_pension_p2 = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt_p2", 
+                                                        value=get_default('monthly_private_pension_p2', 0),
+                                                        help="Monthly pension amount in today's dollars")
+        
+        with col3:
+            private_pension_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="priv_idx_p2", 
+                                                               value=get_default('private_pension_inflation_adjusted_p2', True))
+    else:
+        # Single person Employer Pension
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            private_pension_start_age = st.number_input("Start Age", 50, 100, key="priv_start", 
+                                                       value=get_default('private_pension_start_age', 999),
+                                                       help="Age when employer pension starts")
+        
+        with col2:
+            monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt", 
+                                                     value=get_default('monthly_private_pension', 0),
+                                                     help="Monthly pension amount in today's dollars")
+        
+        with col3:
+            private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", 
+                                                            value=get_default('private_pension_inflation_adjusted', True))
+        
+        # Set Person 2 values to 0 for single mode
+        private_pension_start_age_p2 = 999
+        monthly_private_pension_p2 = 0
+        private_pension_inflation_adjusted_p2 = True
     
     # Calculate button
     st.markdown("---")
@@ -971,15 +1126,25 @@ inputs = {
     'reduction_2_enabled': reduction_2_enabled,
     'age_83_threshold': age_83_threshold,
     'age_83_reduction': age_83_reduction,
+    'couple_mode': couple_mode,
     'oas_start_age': oas_start_age,
     'monthly_oas': monthly_oas,
     'oas_inflation_adjusted': oas_inflation_adjusted,
+    'oas_start_age_p2': oas_start_age_p2,
+    'monthly_oas_p2': monthly_oas_p2,
+    'oas_inflation_adjusted_p2': oas_inflation_adjusted_p2,
     'cpp_start_age': cpp_start_age,
     'monthly_cpp': monthly_cpp,
     'cpp_inflation_adjusted': cpp_inflation_adjusted,
+    'cpp_start_age_p2': cpp_start_age_p2,
+    'monthly_cpp_p2': monthly_cpp_p2,
+    'cpp_inflation_adjusted_p2': cpp_inflation_adjusted_p2,
     'private_pension_start_age': private_pension_start_age,
     'monthly_private_pension': monthly_private_pension,
     'private_pension_inflation_adjusted': private_pension_inflation_adjusted,
+    'private_pension_start_age_p2': private_pension_start_age_p2,
+    'monthly_private_pension_p2': monthly_private_pension_p2,
+    'private_pension_inflation_adjusted_p2': private_pension_inflation_adjusted_p2,
     'part_time_income': part_time_income,
     'part_time_start_age': part_time_start_age,
     'part_time_end_age': part_time_end_age,
@@ -1072,8 +1237,14 @@ if 'results' in st.session_state and st.session_state.results:
         'Monthly Surplus',
         'Surplus Reinvested',
         'OAS',
+        'OAS P1',
+        'OAS P2',
         'CPP',
+        'CPP P1',
+        'CPP P2',
         'Employer Pension',
+        'Employer Pension P1',
+        'Employer Pension P2',
         'Monthly Pension',
         'Investment Withdrawal',
         'Part-Time Income',
@@ -1093,7 +1264,9 @@ if 'results' in st.session_state and st.session_state.results:
     
     # Format currency columns
     currency_cols = ['Investment Balance Start', 'Monthly Investment', 'Investment Withdrawal', 
-                     'OAS', 'CPP', 'Employer Pension', 'Monthly Pension', 'Part-Time Income', 
+                     'OAS', 'OAS P1', 'OAS P2', 'CPP', 'CPP P1', 'CPP P2', 
+                     'Employer Pension', 'Employer Pension P1', 'Employer Pension P2',
+                     'Monthly Pension', 'Part-Time Income', 
                      'Lump Sum', 'Lump Sum Withdrawal', 
                      'Required Income', 'Total Monthly Income', 'Monthly Shortfall', 'Monthly Surplus',
                      'Surplus Reinvested', 'Income (Today\'s $)',
