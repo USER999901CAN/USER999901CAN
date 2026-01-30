@@ -693,7 +693,7 @@ def calculate_age(birthdate):
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
 # Use tabs for better organization on all screen sizes
-tab1, tab2, tab3, tab4 = st.tabs(["1. 👤 Personal & Basic", "2. 💰 Investments", "3. 🏛️ Pensions & Income", "4. 📉 Spending Adjustments"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["1. 👤 Personal & Basic", "2. 💰 Investments", "3. 🏛️ Pensions", "4. 💼 Extra Income & Lump Sums", "5. 📉 Spending Adjustments"])
 
 with tab1:
     st.markdown("### Personal Information")
@@ -802,121 +802,93 @@ with tab3:
     
     with col3:
         private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", value=get_default('private_pension_inflation_adjusted', True))
+
+with tab4:
+    st.markdown("### Part-Time Work")
     
-    st.markdown("### Part-Time Work & Lump Sums")
+    with st.container(border=True):
+        # Title row with checkbox on the right
+        title_col, checkbox_col = st.columns([3, 1])
+        with title_col:
+            st.markdown("**💼 Part-Time Work**")
+        with checkbox_col:
+            part_time_inflation_adjusted = st.checkbox("Indexed", get_default('part_time_inflation_adjusted', False), key="pt_idx", help="Adjust part-time income for inflation")
+        
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            default_part_time_start = get_default('part_time_start_age', retirement_age)
+            part_time_start_age = st.number_input("Start Age", retirement_age, 100, default_part_time_start if default_part_time_start >= retirement_age else retirement_age)
+        with c2:
+            default_part_time_end = get_default('part_time_end_age', retirement_age)
+            part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end if default_part_time_end >= part_time_start_age else retirement_age)
+        with c3:
+            part_time_income = st.number_input("$/Mo", 0, 20000, step=100, key="pt_income", help="Monthly part-time income in today's dollars")
     
-    # Row: Part-Time + Lump Sums
+    st.markdown("### Lump Sums")
+    
     col1, col2 = st.columns(2)
     
     with col1:
         with st.container(border=True):
-            # Title row with checkbox on the right
-            title_col, checkbox_col = st.columns([3, 1])
-            with title_col:
-                st.markdown("**💼 Part-Time Work**")
-            with checkbox_col:
-                part_time_inflation_adjusted = st.checkbox("Indexed", get_default('part_time_inflation_adjusted', False), key="pt_idx", help="Adjust part-time income for inflation")
+            st.markdown("**💵 Deposits**")
             
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                default_part_time_start = get_default('part_time_start_age', retirement_age)
-                part_time_start_age = st.number_input("Start Age", retirement_age, 100, default_part_time_start if default_part_time_start >= retirement_age else retirement_age)
-            with c2:
-                default_part_time_end = get_default('part_time_end_age', retirement_age)
-                part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end if default_part_time_end >= part_time_start_age else retirement_age)
-            with c3:
-                part_time_income = st.number_input("$/Mo", 0, 20000, step=100, key="pt_income", help="Monthly part-time income in today's dollars")
+            # Initialize lump_sums from loaded_scenario if available
+            if 'lump_sums' not in st.session_state:
+                st.session_state.lump_sums = get_default('lump_sums', [])
+            
+            num_lump_sums = st.number_input("Number of Deposits", 0, 10, len(st.session_state.lump_sums), key="num_deposits")
+            
+            while len(st.session_state.lump_sums) < num_lump_sums:
+                st.session_state.lump_sums.append({'age': current_age, 'amount': 0})
+            while len(st.session_state.lump_sums) > num_lump_sums:
+                st.session_state.lump_sums.pop()
+            
+            lump_sums = []
+            if num_lump_sums > 0:
+                for i in range(num_lump_sums):
+                    c_a, c_b = st.columns([1, 2])
+                    with c_a:
+                        age = st.number_input(f"Age #{i+1}", current_age, 100, 
+                            st.session_state.lump_sums[i].get('age', current_age),
+                            key=f"lump_age_{i}")
+                    with c_b:
+                        amount = st.number_input(f"Amount #{i+1}", 0, 10000000,
+                            st.session_state.lump_sums[i].get('amount', 0),
+                            step=1000, key=f"lump_amount_{i}")
+                    lump_sums.append({'age': age, 'amount': amount})
+                    st.session_state.lump_sums[i] = {'age': age, 'amount': amount}
     
     with col2:
         with st.container(border=True):
-            st.markdown("**💵 Lump Sums**")
+            st.markdown("**💸 Withdrawals**")
             
-            # Add 3 empty columns to match Part-Time Work input row
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.markdown("")
-            with c2:
-                st.markdown("")
-            with c3:
-                st.markdown("")
+            # Initialize lump_sum_withdrawals from loaded_scenario if available
+            if 'lump_sum_withdrawals' not in st.session_state:
+                st.session_state.lump_sum_withdrawals = get_default('lump_sum_withdrawals', [])
             
-            c1, c2 = st.columns(2)
+            num_lump_withdrawals = st.number_input("Number of Withdrawals", 0, 10, len(st.session_state.lump_sum_withdrawals), key="num_withdrawals")
             
-            with c1:
-                st.caption("Deposits")
-                # Initialize lump_sums from loaded_scenario if available
-                if 'lump_sums' not in st.session_state:
-                    st.session_state.lump_sums = get_default('lump_sums', [])
-                
-                num_lump_sums = st.number_input("#", 0, 10, len(st.session_state.lump_sums), key="num_deposits", label_visibility="collapsed")
-                
-                while len(st.session_state.lump_sums) < num_lump_sums:
-                    st.session_state.lump_sums.append({'age': current_age, 'amount': 0})
-                while len(st.session_state.lump_sums) > num_lump_sums:
-                    st.session_state.lump_sums.pop()
-                
-                lump_sums = []
-                if num_lump_sums > 0:
-                    # Show only first item to keep height reasonable
-                    display_count = min(num_lump_sums, 1)
-                    for i in range(display_count):
-                        c_a, c_b = st.columns([1, 2])
-                        with c_a:
-                            age = st.number_input(f"Age", current_age, 100, 
-                                st.session_state.lump_sums[i].get('age', current_age),
-                                key=f"lump_age_{i}", label_visibility="collapsed")
-                        with c_b:
-                            amount = st.number_input(f"$", 0, 10000000,
-                                st.session_state.lump_sums[i].get('amount', 0),
-                                step=1000, key=f"lump_amount_{i}", label_visibility="collapsed")
-                        lump_sums.append({'age': age, 'amount': amount})
-                        st.session_state.lump_sums[i] = {'age': age, 'amount': amount}
-                    
-                    # Handle remaining items without displaying
-                    for i in range(display_count, num_lump_sums):
-                        lump_sums.append(st.session_state.lump_sums[i])
-                    
-                    if num_lump_sums > 1:
-                        st.caption(f"+ {num_lump_sums - 1} more")
+            while len(st.session_state.lump_sum_withdrawals) < num_lump_withdrawals:
+                st.session_state.lump_sum_withdrawals.append({'age': current_age, 'amount': 0})
+            while len(st.session_state.lump_sum_withdrawals) > num_lump_withdrawals:
+                st.session_state.lump_sum_withdrawals.pop()
             
-            with c2:
-                st.caption("Withdrawals")
-                # Initialize lump_sum_withdrawals from loaded_scenario if available
-                if 'lump_sum_withdrawals' not in st.session_state:
-                    st.session_state.lump_sum_withdrawals = get_default('lump_sum_withdrawals', [])
-                
-                num_lump_withdrawals = st.number_input("#", 0, 10, len(st.session_state.lump_sum_withdrawals), key="num_withdrawals", label_visibility="collapsed")
-                
-                while len(st.session_state.lump_sum_withdrawals) < num_lump_withdrawals:
-                    st.session_state.lump_sum_withdrawals.append({'age': current_age, 'amount': 0})
-                while len(st.session_state.lump_sum_withdrawals) > num_lump_withdrawals:
-                    st.session_state.lump_sum_withdrawals.pop()
-                
-                lump_withdrawals = []
-                if num_lump_withdrawals > 0:
-                    # Show only first item to keep height reasonable
-                    display_count = min(num_lump_withdrawals, 1)
-                    for i in range(display_count):
-                        c_a, c_b = st.columns([1, 2])
-                        with c_a:
-                            age = st.number_input(f"Age", current_age, 100, 
-                                st.session_state.lump_sum_withdrawals[i].get('age', current_age),
-                                key=f"lump_withdrawal_age_{i}", label_visibility="collapsed")
-                        with c_b:
-                            amount = st.number_input(f"$", 0, 10000000,
-                                st.session_state.lump_sum_withdrawals[i].get('amount', 0),
-                                step=1000, key=f"lump_withdrawal_amount_{i}", label_visibility="collapsed")
-                        lump_withdrawals.append({'age': age, 'amount': amount})
-                        st.session_state.lump_sum_withdrawals[i] = {'age': age, 'amount': amount}
-                    
-                    # Handle remaining items without displaying
-                    for i in range(display_count, num_lump_withdrawals):
-                        lump_withdrawals.append(st.session_state.lump_sum_withdrawals[i])
-                    
-                    if num_lump_withdrawals > 1:
-                        st.caption(f"+ {num_lump_withdrawals - 1} more")
+            lump_withdrawals = []
+            if num_lump_withdrawals > 0:
+                for i in range(num_lump_withdrawals):
+                    c_a, c_b = st.columns([1, 2])
+                    with c_a:
+                        age = st.number_input(f"Age #{i+1}", current_age, 100, 
+                            st.session_state.lump_sum_withdrawals[i].get('age', current_age),
+                            key=f"lump_withdrawal_age_{i}")
+                    with c_b:
+                        amount = st.number_input(f"Amount #{i+1}", 0, 10000000,
+                            st.session_state.lump_sum_withdrawals[i].get('amount', 0),
+                            step=1000, key=f"lump_withdrawal_amount_{i}")
+                    lump_withdrawals.append({'age': age, 'amount': amount})
+                    st.session_state.lump_sum_withdrawals[i] = {'age': age, 'amount': amount}
 
-with tab4:
+with tab5:
     st.markdown("### Age-Based Spending Reductions")
     st.caption("Reduce your required income at specific ages to reflect lower spending in later retirement")
     
