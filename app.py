@@ -770,8 +770,17 @@ with tab2:
     with col2:
         # Clamp default value to be within valid range
         default_stop_age = get_default('stop_investments_age', retirement_age)
-        default_stop_age = max(current_age, min(default_stop_age, retirement_age))
-        stop_investments_age = st.number_input("Stop Contributions at Age", current_age, retirement_age, default_stop_age, help="Age when you'll stop making monthly contributions")
+        # Ensure default is within the valid range [current_age, retirement_age]
+        if current_age <= retirement_age:
+            default_stop_age = max(current_age, min(default_stop_age, retirement_age))
+        else:
+            # If current_age > retirement_age, use retirement_age as both min and max
+            default_stop_age = retirement_age
+        stop_investments_age = st.number_input("Stop Contributions at Age", 
+                                              min(current_age, retirement_age), 
+                                              max(current_age, retirement_age), 
+                                              default_stop_age, 
+                                              help="Age when you'll stop making monthly contributions")
     
     # Calculate button
     st.markdown("---")
