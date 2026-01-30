@@ -147,12 +147,12 @@ class RetirementCalculator:
                     year_data['Monthly Pension'] = round(total_pension, 2)
                     year_data['Yearly Pension Amount'] = round(total_pension * 12, 2)
                 
-                # Calculate investment withdrawal needed (happens at beginning of year)
-                monthly_from_other = part_time + total_pension
-                monthly_needed = required_income
-                
                 # Add required income column (what you need each month with inflation)
                 year_data['Required Income'] = round(required_income, 2)
+                
+                # STEP 1: Calculate initial investment withdrawal needed (before considering clawback)
+                monthly_from_other = part_time + total_pension
+                monthly_needed = required_income
                 
                 if monthly_from_other < monthly_needed:
                     monthly_withdrawal_needed = monthly_needed - monthly_from_other
@@ -162,21 +162,12 @@ class RetirementCalculator:
                     actual_annual_withdrawal = min(annual_withdrawal_needed, max(0, balance))
                     actual_monthly_withdrawal = actual_annual_withdrawal / 12
                     
-                    year_data['Investment Withdrawal'] = round(actual_monthly_withdrawal, 2)
-                    balance -= actual_annual_withdrawal
-                    
-                    # Calculate how far off from 4% rule (based on what was actually withdrawn)
-                    year_data['Withdrawal vs 4% Rule'] = round(actual_monthly_withdrawal - four_percent_amount, 2)
-                    if four_percent_amount > 0:
-                        year_data['% Over 4% Rule'] = round(((actual_monthly_withdrawal - four_percent_amount) / four_percent_amount) * 100, 1)
-                    
                     monthly_withdrawal = actual_monthly_withdrawal
                 else:
                     monthly_withdrawal = 0
                 
-                # Calculate OAS clawback based on total annual income
+                # STEP 2: Calculate OAS clawback based on total income (before withdrawal adjustment)
                 # OAS clawback threshold is $86,912 in 2024, clawback rate is 15%
-                # Full clawback occurs at $142,609 (2024)
                 OAS_CLAWBACK_THRESHOLD = 86912
                 OAS_CLAWBACK_RATE = 0.15
                 
@@ -188,15 +179,43 @@ class RetirementCalculator:
                 if annual_income > OAS_CLAWBACK_THRESHOLD:
                     excess_income = annual_income - OAS_CLAWBACK_THRESHOLD
                     annual_clawback = excess_income * OAS_CLAWBACK_RATE
-                    # Clawback cannot exceed the OAS pension amount
+                    # Clawback cannot exceed the OAS pension amount (government pension only)
                     max_clawback = pension * 12  # Annual OAS amount
                     annual_clawback = min(annual_clawback, max_clawback)
                     oas_clawback_monthly = annual_clawback / 12
                 
                 year_data['OAS Clawback'] = round(oas_clawback_monthly, 2)
                 
-                # Reduce Total Monthly Income by clawback
-                # Total = Part-Time + Pension (Gov + Private) + Investment Withdrawal - OAS Clawback
+                # STEP 3: If clawback creates a shortfall, withdraw additional funds from investments
+                if oas_clawback_monthly > 0:
+                    # After clawback, effective income from pensions/part-time is reduced
+                    effective_monthly_from_other = monthly_from_other - oas_clawback_monthly
+                    
+                    # Check if we need additional withdrawal to cover the clawback shortfall
+                    if effective_monthly_from_other + monthly_withdrawal < monthly_needed:
+                        additional_withdrawal_needed = monthly_needed - (effective_monthly_from_other + monthly_withdrawal)
+                        additional_annual_withdrawal = additional_withdrawal_needed * 12
+                        
+                        # Cap additional withdrawal at remaining balance
+                        actual_additional_annual = min(additional_annual_withdrawal, max(0, balance))
+                        additional_monthly = actual_additional_annual / 12
+                        
+                        # Add to total withdrawal
+                        monthly_withdrawal += additional_monthly
+                        actual_annual_withdrawal = monthly_withdrawal * 12
+                
+                # STEP 4: Deduct total withdrawal from balance
+                actual_annual_withdrawal = monthly_withdrawal * 12
+                balance -= actual_annual_withdrawal
+                
+                year_data['Investment Withdrawal'] = round(monthly_withdrawal, 2)
+                
+                # Calculate how far off from 4% rule (based on what was actually withdrawn)
+                year_data['Withdrawal vs 4% Rule'] = round(monthly_withdrawal - four_percent_amount, 2)
+                if four_percent_amount > 0:
+                    year_data['% Over 4% Rule'] = round(((monthly_withdrawal - four_percent_amount) / four_percent_amount) * 100, 1)
+                
+                # STEP 5: Calculate final Total Monthly Income (after clawback)
                 total_income_before_clawback = part_time + total_pension + monthly_withdrawal
                 year_data['Total Monthly Income'] = round(total_income_before_clawback - oas_clawback_monthly, 2)
                 
