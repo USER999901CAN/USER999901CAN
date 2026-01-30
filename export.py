@@ -26,12 +26,17 @@ def export_to_excel(df, inputs):
             ['Investment Return Rate', f"{inputs['investment_return']}%"],
             ['Yearly Inflation', f"{inputs['yearly_inflation']}%"],
             ['Retirement Year One Income', f"${inputs['retirement_year_one_income']:,}"],
-            ['Age 77 Reduction', f"{inputs['age_77_reduction']}%"],
-            ['Age 83 Reduction', f"{inputs['age_83_reduction']}%"],
-            ['Pension Start Age', inputs['pension_start_age']],
-            ['Monthly Pension', f"${inputs['monthly_pension']:,}"],
-            ['Part-Time Income', f"${inputs['part_time_income']:,}"],
-            ['Part-Time Until Age', inputs['part_time_end_age']],
+            ['Age 77 Reduction', f"{inputs.get('age_77_reduction', 0)}%"],
+            ['Age 83 Reduction', f"{inputs.get('age_83_reduction', 0)}%"],
+            ['Couple Mode', 'Yes' if inputs.get('couple_mode', False) else 'No'],
+            ['OAS Start Age', inputs.get('oas_start_age', 65)],
+            ['Monthly OAS', f"${inputs.get('monthly_oas', 0):,}"],
+            ['CPP Start Age', inputs.get('cpp_start_age', 65)],
+            ['Monthly CPP', f"${inputs.get('monthly_cpp', 0):,}"],
+            ['Private Pension Start Age', inputs.get('private_pension_start_age', 999)],
+            ['Monthly Private Pension', f"${inputs.get('monthly_private_pension', 0):,}"],
+            ['Part-Time Income', f"${inputs.get('part_time_income', 0):,}"],
+            ['Part-Time Until Age', inputs.get('part_time_end_age', 65)],
         ], columns=['Parameter', 'Value'])
         
         inputs_df.to_excel(writer, sheet_name='Inputs', index=False)
@@ -237,11 +242,22 @@ def export_to_pdf(df, inputs, results):
         pdf.ln(1)
     
     # Pension
-    if inputs.get('monthly_pension', 0) > 0:
-        inflation_note = " (indexed to inflation)" if inputs.get('pension_inflation_adjusted') else ""
+    if inputs.get('monthly_oas', 0) > 0 or inputs.get('monthly_cpp', 0) > 0:
+        oas_note = f" OAS: ${inputs.get('monthly_oas', 0):,.0f}"
+        cpp_note = f" CPP: ${inputs.get('monthly_cpp', 0):,.0f}"
+        inflation_note = " (indexed to inflation)" if inputs.get('oas_inflation_adjusted') or inputs.get('cpp_inflation_adjusted') else ""
         pdf.body_text(
-            f"Government Pension (Age {inputs['pension_start_age']}+): "
-            f"${inputs['monthly_pension']:,.0f}/month{inflation_note}"
+            f"Government Pensions (Age {inputs.get('oas_start_age', 65)}+): "
+            f"{oas_note}, {cpp_note}{inflation_note}"
+        )
+        pdf.ln(1)
+    
+    # Private pension
+    if inputs.get('monthly_private_pension', 0) > 0:
+        inflation_note = " (indexed to inflation)" if inputs.get('private_pension_inflation_adjusted') else ""
+        pdf.body_text(
+            f"Private Pension (Age {inputs.get('private_pension_start_age', 999)}+): "
+            f"${inputs.get('monthly_private_pension', 0):,.0f}/month{inflation_note}"
         )
         pdf.ln(1)
     
@@ -294,10 +310,11 @@ def export_to_pdf(df, inputs, results):
     # Create condensed table - show every 5 years plus key ages
     key_ages = [
         inputs['current_age'],
-        inputs['stop_investments_age'],
+        inputs.get('stop_investments_age', inputs['retirement_age']),
         inputs['retirement_age'],
         inputs.get('part_time_end_age', 65),
-        inputs['pension_start_age'],
+        inputs.get('oas_start_age', 65),
+        inputs.get('cpp_start_age', 65),
         77, 83, 90, 95, 100
     ]
     
