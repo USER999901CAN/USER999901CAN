@@ -359,7 +359,27 @@ st.markdown("Plan your retirement with pension, and investment projections")
 
 # Sidebar for scenario management
 with st.sidebar:
-    st.header("💾 Scenario Manager")
+    # Compact styling
+    st.markdown("""
+        <style>
+        .sidebar .element-container {
+            margin-bottom: 0.3rem;
+        }
+        .sidebar h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .sidebar .stButton button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+        }
+        .sidebar .stCaption {
+            font-size: 0.75rem;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    st.header("💾 Scenarios")
     
     # Initialize scenarios in session state
     if 'saved_scenarios' not in st.session_state:
@@ -368,18 +388,17 @@ with st.sidebar:
         st.session_state.active_scenario_name = None
     
     # Active Scenario Selector
-    st.markdown("### 🎯 Active Scenario")
     scenario_list = list(st.session_state.saved_scenarios.keys())
     
     if scenario_list:
         # Dropdown to switch between loaded scenarios
         current_index = scenario_list.index(st.session_state.active_scenario_name) if st.session_state.active_scenario_name in scenario_list else 0
         active_scenario = st.selectbox(
-            "Switch to:",
+            "Active:",
             options=scenario_list,
             index=current_index,
             key="active_scenario_selector",
-            help="Switch between loaded scenarios"
+            label_visibility="collapsed"
         )
         
         # If selection changed, load that scenario
@@ -437,139 +456,109 @@ with st.sidebar:
             
             st.rerun()
         
-        st.caption(f"📊 {len(scenario_list)} scenario(s) loaded")
+        st.caption(f"{len(scenario_list)} loaded")
     else:
-        st.info("No scenarios loaded. Create or import one below.")
+        st.caption("No scenarios")
     
-    st.markdown("---")
+    # Quick Actions - compact buttons
+    col1, col2, col3 = st.columns(3)
     
-    # Quick Actions
-    st.markdown("### ⚡ Quick Actions")
-    
-    col1, col2 = st.columns(2)
-    
-    # New Scenario button
     with col1:
-        if st.button("➕ New", use_container_width=True, help="Create new scenario"):
-            st.session_state.show_new_scenario_dialog = True
+        if st.button("➕", use_container_width=True, help="New scenario"):
+            st.session_state.show_new_dialog = True
     
-    # Import Scenarios button
     with col2:
-        if st.button("📥 Import", use_container_width=True, help="Import scenarios from disk"):
+        if st.button("📥", use_container_width=True, help="Import from file"):
             st.session_state.show_import_dialog = True
     
-    # New Scenario Dialog
-    if st.session_state.get('show_new_scenario_dialog', False):
-        st.markdown("#### ➕ Create New Scenario")
-        new_scenario_name = st.text_input(
-            "Scenario Name:",
-            placeholder="e.g., Base Case, Early Retirement",
-            key="new_scenario_name_input"
-        )
+    with col3:
+        if st.button("🗑️", use_container_width=True, help="Clear all"):
+            st.session_state.show_clear_dialog = True
+    
+    # New Scenario Dialog - streamlined
+    if st.session_state.get('show_new_dialog', False):
+        st.markdown("---")
+        new_name = st.text_input("Name:", placeholder="My Scenario", key="new_name")
         
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Create", use_container_width=True, disabled=not new_scenario_name):
-                if new_scenario_name and new_scenario_name not in st.session_state.saved_scenarios:
-                    # Create empty scenario with current inputs if available
+            if st.button("Create", disabled=not new_name, use_container_width=True):
+                if new_name and new_name not in st.session_state.saved_scenarios:
+                    from datetime import datetime
+                    
+                    # Use current inputs or defaults
                     if 'inputs' in st.session_state:
-                        new_scenario_data = st.session_state.inputs.copy()
+                        data = st.session_state.inputs.copy()
                     else:
-                        # Create default scenario
-                        new_scenario_data = {
-                            'current_age': 30,
-                            'retirement_age': 65,
-                            'tfsa': 0,
-                            'rrsp': 0,
-                            'non_registered': 0,
-                            'lira': 0,
-                            'total_investments': 0,
-                            'monthly_investments': 0,
-                            'investment_return': 6.0,
-                            'yearly_inflation': 2.0,
-                            'retirement_year_one_income': 5000,
-                            'pension_start_age': 65,
-                            'monthly_pension': 0,
-                            'private_pension_start_age': 65,
-                            'monthly_private_pension': 0,
-                            'private_pension_inflation_adjusted': True,
-                            'part_time_income': 0,
-                            'part_time_start_age': 65,
-                            'part_time_end_age': 70,
-                            'part_time_inflation_adjusted': False,
-                            'stop_investments_age': 65,
-                            'pension_inflation_adjusted': True,
-                            'inflation_adjustment_enabled': True,
-                            'reduction_1_enabled': True,
-                            'age_77_threshold': 77,
-                            'age_77_reduction': 10,
-                            'reduction_2_enabled': True,
-                            'age_83_threshold': 83,
-                            'age_83_reduction': 10,
-                            'lump_sums': [],
-                            'lump_sum_withdrawals': []
+                        data = {
+                            'current_age': 30, 'retirement_age': 65, 'tfsa': 0, 'rrsp': 0,
+                            'non_registered': 0, 'lira': 0, 'total_investments': 0,
+                            'monthly_investments': 0, 'investment_return': 6.0,
+                            'yearly_inflation': 2.1, 'retirement_year_one_income': 0,
+                            'couple_mode': False, 'oas_start_age': 65, 'monthly_oas': 0,
+                            'cpp_start_age': 70, 'monthly_cpp': 0,
+                            'private_pension_start_age': 500, 'monthly_private_pension': 0,
+                            'part_time_income': 0, 'lump_sums': [], 'lump_sum_withdrawals': []
                         }
                     
-                    from datetime import datetime
-                    new_scenario_data['scenario_name'] = new_scenario_name
-                    new_scenario_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    data['scenario_name'] = new_name
+                    data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     
-                    # Add to loaded scenarios
-                    st.session_state.saved_scenarios[new_scenario_name] = new_scenario_data
-                    st.session_state.active_scenario_name = new_scenario_name
-                    st.session_state.current_scenario_name = new_scenario_name
+                    # Add to session
+                    st.session_state.saved_scenarios[new_name] = data
+                    st.session_state.active_scenario_name = new_name
                     
-                    # Auto-export to disk
-                    scenario_json = json.dumps(new_scenario_data, indent=2)
-                    safe_filename = new_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                    # Auto-download JSON
+                    safe_name = new_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                    json_str = json.dumps(data, indent=2)
                     
-                    st.session_state.show_new_scenario_dialog = False
-                    st.success(f"✅ Created: {new_scenario_name}")
-                    st.rerun()
-                elif new_scenario_name in st.session_state.saved_scenarios:
-                    st.error("Scenario name already exists!")
+                    st.download_button(
+                        "⬇️ Download",
+                        data=json_str,
+                        file_name=f"{safe_name}.json",
+                        mime="application/json",
+                        use_container_width=True
+                    )
+                    
+                    st.session_state.show_new_dialog = False
+                    st.success(f"✅ {new_name}")
         
         with col2:
             if st.button("Cancel", use_container_width=True):
-                st.session_state.show_new_scenario_dialog = False
+                st.session_state.show_new_dialog = False
                 st.rerun()
     
-    # Import Dialog
+    # Import Dialog - auto-load on file select
     if st.session_state.get('show_import_dialog', False):
-        st.markdown("#### 📥 Import Scenarios")
-        uploaded_files = st.file_uploader(
-            "Choose JSON files:",
+        st.markdown("---")
+        uploaded = st.file_uploader(
+            "Select JSON:",
             type=['json'],
             accept_multiple_files=True,
-            key="import_uploader"
+            key="uploader",
+            label_visibility="collapsed"
         )
         
-        if uploaded_files:
-            imported_count = 0
-            for uploaded_file in uploaded_files:
+        if uploaded:
+            count = 0
+            for file in uploaded:
                 try:
-                    scenario_data = json.load(uploaded_file)
-                    scenario_name = scenario_data.get('scenario_name', uploaded_file.name.replace('.json', ''))
+                    data = json.load(file)
+                    name = data.get('scenario_name', file.name.replace('.json', ''))
                     
                     # Set defaults
-                    scenario_data.setdefault('reduction_1_enabled', True)
-                    scenario_data.setdefault('reduction_2_enabled', True)
-                    scenario_data.setdefault('lump_sums', [])
-                    scenario_data.setdefault('lump_sum_withdrawals', [])
-                    scenario_data.setdefault('inflation_adjustment_enabled', True)
-                    scenario_data.setdefault('pension_inflation_adjusted', True)
-                    scenario_data.setdefault('private_pension_inflation_adjusted', True)
-                    scenario_data.setdefault('part_time_inflation_adjusted', False)
+                    data.setdefault('reduction_1_enabled', True)
+                    data.setdefault('reduction_2_enabled', True)
+                    data.setdefault('lump_sums', [])
+                    data.setdefault('lump_sum_withdrawals', [])
                     
-                    # Add to loaded scenarios
-                    st.session_state.saved_scenarios[scenario_name] = scenario_data
-                    imported_count += 1
-                    
+                    st.session_state.saved_scenarios[name] = data
+                    count += 1
                 except Exception as e:
-                    st.error(f"Error loading {uploaded_file.name}: {str(e)}")
+                    st.error(f"Error: {file.name}")
             
-            if imported_count > 0:
-                st.success(f"✅ Imported {imported_count} scenario(s)")
+            if count > 0:
+                st.success(f"✅ Loaded {count}")
                 st.session_state.show_import_dialog = False
                 st.rerun()
         
@@ -577,87 +566,75 @@ with st.sidebar:
             st.session_state.show_import_dialog = False
             st.rerun()
     
-    st.markdown("---")
-    
-    # Save Current Scenario
-    if st.session_state.active_scenario_name:
-        st.markdown("### 💾 Save Current")
-        
-        if st.button("💾 Save to Disk", use_container_width=True, help="Export current scenario"):
-            if 'inputs' in st.session_state:
-                from datetime import datetime
-                download_data = st.session_state.inputs.copy()
-                download_data['scenario_name'] = st.session_state.active_scenario_name
-                download_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                scenario_json = json.dumps(download_data, indent=2)
-                
-                safe_filename = st.session_state.active_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-                download_filename = f"{safe_filename}.json"
-                
-                st.download_button(
-                    "⬇️ Download",
-                    data=scenario_json,
-                    file_name=download_filename,
-                    mime="application/json",
-                    use_container_width=True
-                )
-        
+    # Clear All Dialog
+    if st.session_state.get('show_clear_dialog', False):
         st.markdown("---")
+        st.warning("Clear all scenarios?")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Yes", use_container_width=True):
+                st.session_state.saved_scenarios = {}
+                st.session_state.active_scenario_name = None
+                st.session_state.loaded_scenario = None
+                st.session_state.show_clear_dialog = False
+                st.rerun()
+        with col2:
+            if st.button("No", use_container_width=True):
+                st.session_state.show_clear_dialog = False
+                st.rerun()
     
-    # Loaded Scenarios Management
+    # Loaded Scenarios List - compact
     if scenario_list:
-        st.markdown("### 📋 Loaded Scenarios")
-        
-        for scenario_name in scenario_list:
-            col1, col2 = st.columns([3, 1])
+        st.markdown("---")
+        for name in scenario_list:
+            col1, col2, col3 = st.columns([5, 1, 1])
             with col1:
-                is_active = scenario_name == st.session_state.active_scenario_name
-                prefix = "🎯 " if is_active else "📄 "
-                st.caption(f"{prefix}{scenario_name}")
+                prefix = "🎯" if name == st.session_state.active_scenario_name else "📄"
+                st.caption(f"{prefix} {name}")
             with col2:
-                if st.button("🗑️", key=f"delete_{scenario_name}", help="Remove", use_container_width=True):
-                    del st.session_state.saved_scenarios[scenario_name]
-                    if st.session_state.active_scenario_name == scenario_name:
+                # Download individual
+                if 'inputs' in st.session_state and name == st.session_state.active_scenario_name:
+                    data = st.session_state.inputs.copy()
+                    data['scenario_name'] = name
+                    safe_name = name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                    st.download_button(
+                        "💾",
+                        data=json.dumps(data, indent=2),
+                        file_name=f"{safe_name}.json",
+                        mime="application/json",
+                        key=f"dl_{name}",
+                        help="Download"
+                    )
+            with col3:
+                if st.button("❌", key=f"del_{name}", help="Delete"):
+                    del st.session_state.saved_scenarios[name]
+                    if st.session_state.active_scenario_name == name:
                         st.session_state.active_scenario_name = None
                     st.rerun()
         
-        st.markdown("---")
-        
-        # Export All
+        # Export All as ZIP
         if len(scenario_list) > 1:
-            if st.button("📦 Export All", use_container_width=True, help="Export all scenarios as ZIP"):
+            st.markdown("---")
+            if st.button("📦 Export All", use_container_width=True):
                 import io
                 import zipfile
                 
                 zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                    for name, scenario_data in st.session_state.saved_scenarios.items():
-                        safe_filename = name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-                        json_str = json.dumps(scenario_data, indent=2)
-                        zip_file.writestr(f"{safe_filename}.json", json_str)
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+                    for name, data in st.session_state.saved_scenarios.items():
+                        safe_name = name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                        zf.writestr(f"{safe_name}.json", json.dumps(data, indent=2))
                 
                 zip_buffer.seek(0)
                 st.download_button(
-                    "💾 Download ZIP",
+                    "⬇️ Download ZIP",
                     data=zip_buffer.getvalue(),
-                    file_name="retirement_scenarios.zip",
+                    file_name="scenarios.zip",
                     mime="application/zip",
                     use_container_width=True
                 )
-    
-    st.markdown("---")
-    
-    # Clear All button
-    if st.button("🔄 Clear All", use_container_width=True, help="Remove all scenarios and reset"):
-        st.session_state.saved_scenarios = {}
-        st.session_state.active_scenario_name = None
-        st.session_state.loaded_scenario = None
-        st.session_state.scenario_loaded = False
-        st.session_state.current_scenario_name = ''
-        
-        # Clear widget keys
-        widget_keys = [
-            'monthly_inv', 'gov_start', 'gov_amt', 'gov_idx', 
+
+# Main content continues with input parameters 
             'priv_start', 'priv_amt', 'priv_idx', 'pt_income', 'pt_idx',
             'reduction_1_enabled', 'age_reduction_1_age', 'age_reduction_1_pct',
             'reduction_2_enabled', 'age_reduction_2_age', 'age_reduction_2_pct',
