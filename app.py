@@ -824,7 +824,7 @@ with tab3:
         
         with col1:
             oas_start_age_p2 = st.number_input("Start Age", 65, 70, key="oas_start_p2", 
-                                              value=get_default('oas_start_age_p2', 65), 
+                                              value=min(get_default('oas_start_age_p2', 65), 70), 
                                               help="Age when OAS starts (typically 65)")
         
         with col2:
@@ -885,7 +885,7 @@ with tab3:
         
         with col1:
             cpp_start_age_p2 = st.number_input("Start Age", 60, 70, key="cpp_start_p2", 
-                                              value=get_default('cpp_start_age_p2', 70), 
+                                              value=min(get_default('cpp_start_age_p2', 70), 70), 
                                               help="Age when CPP starts (60-70)")
         
         with col2:
