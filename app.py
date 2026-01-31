@@ -497,7 +497,7 @@ with st.sidebar:
     
     # Load button with file uploader (styled to look like button)
     uploaded = st.file_uploader(
-        "Drag & drop JSON files or click Browse",
+        "Load Scenario",
         type=['json'],
         accept_multiple_files=True,
         key="load_uploader"
