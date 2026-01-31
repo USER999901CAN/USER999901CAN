@@ -1447,21 +1447,68 @@ if 'results' in st.session_state and st.session_state.results:
     # Check if there are any OAS clawbacks
     has_oas_clawback = (df['OAS Clawback'] > 0).any() if 'OAS Clawback' in df.columns else False
     
-    col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+    # Calculate Financial Health Score (0-100)
+    # Based on absolute balance thresholds throughout retirement
+    financial_health_score = 100
+    
+    # Detect shortfall (when balance hits zero before age 100)
+    shortfall_age = None
+    for idx, row in df.iterrows():
+        if row['Age'] >= retirement_age and row['Investment Balance End'] <= 0 and row['Age'] < 100:
+            shortfall_age = int(row['Age'])
+            break
+    
+    # CRITICAL: If there's a shortfall (funds run out), score is automatically 0
+    if shortfall_age:
+        financial_health_score = 0
+        health_rating = "❌ Fail"
+    else:
+        # Check minimum balance from retirement through age 95
+        retirement_df = df[df['Age'] >= retirement_age]
+        if not retirement_df.empty:
+            min_balance = retirement_df['Investment Balance End'].min()
+            
+            # Apply threshold-based scoring
+            if min_balance >= 1_600_000:
+                # Excellent: Always above $1.6M
+                financial_health_score = 100
+                health_rating = "🟢 Excellent"
+            elif min_balance >= 1_200_000:
+                # Good: Always above $1.2M
+                financial_health_score = 75
+                health_rating = "🟡 Good"
+            elif min_balance >= 500_000:
+                # Fair: Always above $500K
+                financial_health_score = 50
+                health_rating = "🟠 Fair"
+            else:
+                # Poor: Below $500K at some point
+                financial_health_score = 25
+                health_rating = "🔴 Poor"
+        else:
+            financial_health_score = 0
+            health_rating = "❌ Fail"
+    
+    col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
     with col1:
-        st.metric("Years Until Retirement", retirement_age - current_age)
+        st.metric("Financial Health", f"{financial_health_score}/100")
     with col2:
-        st.metric("Retirement Age", retirement_age)
+        st.metric("Rating", health_rating)
     with col3:
-        st.metric("Balance at Retirement", f"${balance_at_retirement:,.0f}")
+        st.metric("Years to Retire", retirement_age - current_age)
     with col4:
-        st.metric("Balance at Age 95", f"${balance_at_95:,.0f}")
+        st.metric("Balance at Retire", f"${balance_at_retirement:,.0f}")
     with col5:
-        st.metric("Balance at Age 100", f"${results['final_balance']:,.0f}")
+        st.metric("Balance at 95", f"${balance_at_95:,.0f}")
     with col6:
-        st.metric("Any Monthly Shortfall?", "Yes" if has_shortfall else "No")
+        st.metric("Balance at 100", f"${results['final_balance']:,.0f}")
     with col7:
+        st.metric("Shortfall?", "Yes" if has_shortfall else "No")
+    with col8:
         st.metric("OAS Clawback?", "Yes" if has_oas_clawback else "No")
+    
+    # Add caption explaining Financial Health Score
+    st.caption("💡 **Financial Health Score:** 🟢 100 (Excellent - always ≥$1.6M) | 🟡 75 (Good - always ≥$1.2M) | 🟠 50 (Fair - always ≥$500K) | 🔴 25 (Poor - below $500K) | ❌ 0 (Fail - Shortfall)")
     
     # Projection table
     st.subheader("Year-by-Year Projection")

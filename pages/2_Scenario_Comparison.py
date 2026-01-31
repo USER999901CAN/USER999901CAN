@@ -234,54 +234,33 @@ if st.button("🔄 Compare Scenarios", type="primary"):
                         break
                 
                 # Calculate Financial Health Score (0-100)
-                # Based on financial planning best practices
+                # Based on absolute balance thresholds throughout retirement
                 score = 100
                 
-                # Factor 1: Longevity of funds (40 points max)
-                # Ideal: Funds last to age 100+ with positive balance
+                # CRITICAL: If there's a shortfall (funds run out), score is automatically 0
                 if shortfall_age:
-                    years_short = 100 - shortfall_age
-                    score -= min(40, years_short * 2)  # Lose 2 points per year short of 100
-                elif balance_at_95 <= 0:
-                    score -= 40  # No funds at 95
-                elif balance_at_95 < balance_at_retirement * 0.25:
-                    score -= 20  # Low balance at 95 (less than 25% of retirement balance)
-                
-                # Factor 2: Balance trajectory (30 points max)
-                # Ideal: Maintain or grow balance through retirement
-                if balance_at_75 > 0 and balance_at_85 > 0:
-                    # Check if balance is declining too rapidly
-                    decline_75_to_85 = (balance_at_75 - balance_at_85) / balance_at_75 if balance_at_75 > 0 else 0
-                    if decline_75_to_85 > 0.5:  # Lost more than 50% in 10 years
-                        score -= 15
-                    elif decline_75_to_85 > 0.3:  # Lost 30-50%
-                        score -= 10
-                    
-                    # Check balance at 85 relative to retirement
-                    if balance_at_85 < balance_at_retirement * 0.3:
-                        score -= 15  # Less than 30% of retirement balance at 85
-                elif balance_at_85 <= 0:
-                    score -= 30  # No funds at 85
-                
-                # Factor 3: Retirement readiness (30 points max)
-                # Ideal: Strong balance at retirement relative to needs
-                years_in_retirement = 95 - retirement_age
-                if balance_at_retirement > 0 and years_in_retirement > 0:
-                    # Rough estimate: need 25x annual expenses for safe withdrawal
-                    # If balance at 95 is still positive, that's good
-                    if balance_at_95 > balance_at_retirement * 0.5:
-                        pass  # Excellent - no deduction
-                    elif balance_at_95 > balance_at_retirement * 0.25:
-                        score -= 10  # Good but declining
-                    elif balance_at_95 > 0:
-                        score -= 20  # Marginal
-                    else:
-                        score -= 30  # Insufficient
+                    score = 0
                 else:
-                    score -= 30  # No retirement balance
-                
-                # Ensure score stays in 0-100 range
-                score = max(0, min(100, score))
+                    # Check minimum balance from retirement through age 95
+                    retirement_df = df[df['Age'] >= retirement_age]
+                    if not retirement_df.empty:
+                        min_balance = retirement_df['Investment Balance End'].min()
+                        
+                        # Apply threshold-based scoring
+                        if min_balance >= 1_600_000:
+                            # Excellent: Always above $1.6M
+                            score = 100
+                        elif min_balance >= 1_200_000:
+                            # Good: Always above $1.2M
+                            score = 75
+                        elif min_balance >= 500_000:
+                            # Fair: Always above $500K
+                            score = 50
+                        else:
+                            # Poor: Below $500K at some point
+                            score = 25
+                    else:
+                        score = 0
                 
                 comparison_data.append({
                     'Scenario': scenario_name,
@@ -292,7 +271,7 @@ if st.button("🔄 Compare Scenarios", type="primary"):
                     'Balance at Age 75': balance_at_75,
                     'Balance at Age 85': balance_at_85,
                     'Balance at Age 95': balance_at_95,
-                    'Shortfall Age': shortfall_age if shortfall_age else 'N/A',
+                    'Shortfall Age': shortfall_age if shortfall_age else '',
                     'Initial Shortfall': initial_shortfall if shortfall_age else 0
                 })
             except Exception as e:
@@ -329,14 +308,16 @@ if 'comparison_data' in st.session_state and st.session_state.comparison_data:
     
     # Add color coding to Financial Health Score
     def color_score(val):
-        if val >= 80:
-            return '🟢'  # Green - Excellent
-        elif val >= 60:
-            return '🟡'  # Yellow - Good
-        elif val >= 40:
-            return '🟠'  # Orange - Fair
+        if val == 0:
+            return '❌'  # Fail (shortfall exists)
+        elif val == 100:
+            return '🟢'  # Green - Excellent (always ≥$1.6M)
+        elif val == 75:
+            return '🟡'  # Yellow - Good (always ≥$1.2M)
+        elif val == 50:
+            return '🟠'  # Orange - Fair (always ≥$500K)
         else:
-            return '🔴'  # Red - Poor
+            return '🔴'  # Red - Poor (below $500K at some point)
     
     formatted_df['Rating'] = formatted_df['Financial Health Score'].apply(color_score)
     formatted_df['Financial Health Score'] = formatted_df['Financial Health Score'].apply(lambda x: f"{x:.0f}/100")
@@ -347,8 +328,7 @@ if 'comparison_data' in st.session_state and st.session_state.comparison_data:
     
     st.dataframe(formatted_df, use_container_width=True, hide_index=True)
     
-    st.caption("💡 **Financial Health Score:** 🟢 80-100 (Excellent) | 🟡 60-79 (Good) | 🟠 40-59 (Fair) | 🔴 0-39 (Poor)")
-    st.caption("Score based on: fund longevity (40%), balance trajectory (30%), retirement readiness (30%)")
+    st.caption("💡 **Financial Health Score:** 🟢 100 (Excellent - always ≥$1.6M) | 🟡 75 (Good - always ≥$1.2M) | 🟠 50 (Fair - always ≥$500K) | 🔴 25 (Poor - below $500K) | ❌ 0 (Fail - Shortfall)")
     
     # Visual comparisons
     st.subheader("📊 Visual Comparison")
