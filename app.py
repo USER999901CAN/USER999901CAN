@@ -1391,35 +1391,6 @@ inputs = {
 }
 st.session_state.inputs = inputs
 
-# Handle scenario update if requested
-if st.session_state.get('update_scenario_on_next_run', False):
-    if st.session_state.active_scenario_name:
-        from datetime import datetime
-        
-        # Update the scenario in memory
-        updated_data = inputs.copy()
-        updated_data['scenario_name'] = st.session_state.active_scenario_name
-        updated_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        st.session_state.saved_scenarios[st.session_state.active_scenario_name] = updated_data
-        
-        # Clear cached calculation for this scenario since it's been updated
-        if 'calculated_scenarios' in st.session_state and st.session_state.active_scenario_name in st.session_state.calculated_scenarios:
-            del st.session_state.calculated_scenarios[st.session_state.active_scenario_name]
-        
-        # Prepare download
-        safe_name = st.session_state.active_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-        json_str = json.dumps(updated_data, indent=2)
-        
-        st.success(f"✅ Updated '{st.session_state.active_scenario_name}'")
-        st.download_button(
-            "💾 Download Updated File",
-            data=json_str,
-            file_name=f"{safe_name}.json",
-            mime="application/json",
-            key="update_download"
-        )
-        st.session_state.update_scenario_on_next_run = False
-
 # Check if any calculate button was pressed
 calculate_button = (calculate_button_tab1 or calculate_button_tab2 or calculate_button_tab3 or 
                    calculate_button_tab4 or calculate_button_tab5)
@@ -1431,6 +1402,39 @@ if calculate_button:
         
         st.session_state.results = results
         st.session_state.inputs = inputs  # Save inputs too
+        
+        # If update was requested, handle it now
+        if st.session_state.get('update_scenario_on_next_run', False):
+            if st.session_state.active_scenario_name:
+                from datetime import datetime
+                
+                # Update the scenario in memory
+                updated_data = inputs.copy()
+                updated_data['scenario_name'] = st.session_state.active_scenario_name
+                updated_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                st.session_state.saved_scenarios[st.session_state.active_scenario_name] = updated_data
+                
+                # Clear cached calculation for this scenario since it's been updated
+                if 'calculated_scenarios' in st.session_state and st.session_state.active_scenario_name in st.session_state.calculated_scenarios:
+                    del st.session_state.calculated_scenarios[st.session_state.active_scenario_name]
+                
+                # Show success message and download button
+                st.success(f"✅ Updated '{st.session_state.active_scenario_name}'")
+                
+                # Prepare download
+                safe_name = st.session_state.active_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                json_str = json.dumps(updated_data, indent=2)
+                
+                st.download_button(
+                    "💾 Download Updated File",
+                    data=json_str,
+                    file_name=f"{safe_name}.json",
+                    mime="application/json",
+                    key="update_download_after_calc"
+                )
+                
+                st.session_state.update_scenario_on_next_run = False
+                
     except Exception as e:
         st.error(f"Error calculating retirement projection: {str(e)}")
         st.error(f"Error type: {type(e).__name__}")
