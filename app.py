@@ -480,14 +480,66 @@ with st.sidebar:
             
             # Set widget values
             st.session_state['monthly_inv'] = loaded_scenario.get('monthly_investments', 0)
-            st.session_state['gov_start'] = loaded_scenario.get('pension_start_age', 65)
-            st.session_state['gov_amt'] = loaded_scenario.get('monthly_pension', 0)
-            st.session_state['gov_idx'] = loaded_scenario.get('pension_inflation_adjusted', True)
+            
+            # OAS fields
+            st.session_state['oas_start_p1'] = loaded_scenario.get('oas_start_age', 65)
+            st.session_state['oas_start_p2'] = loaded_scenario.get('oas_start_age_p2', 65)
+            st.session_state['oas_start'] = loaded_scenario.get('oas_start_age', 65)
+            st.session_state['oas_amt_p1'] = loaded_scenario.get('monthly_oas', 0)
+            st.session_state['oas_amt_p2'] = loaded_scenario.get('monthly_oas_p2', 0)
+            st.session_state['oas_amt'] = loaded_scenario.get('monthly_oas', 0)
+            st.session_state['oas_idx_p1'] = loaded_scenario.get('oas_inflation_adjusted', True)
+            st.session_state['oas_idx_p2'] = loaded_scenario.get('oas_inflation_adjusted_p2', True)
+            st.session_state['oas_idx'] = loaded_scenario.get('oas_inflation_adjusted', True)
+            
+            # CPP fields
+            st.session_state['cpp_start_p1'] = loaded_scenario.get('cpp_start_age', 70)
+            st.session_state['cpp_start_p2'] = loaded_scenario.get('cpp_start_age_p2', 70)
+            st.session_state['cpp_start'] = loaded_scenario.get('cpp_start_age', 70)
+            st.session_state['cpp_amt_p1'] = loaded_scenario.get('monthly_cpp', 0)
+            st.session_state['cpp_amt_p2'] = loaded_scenario.get('monthly_cpp_p2', 0)
+            st.session_state['cpp_amt'] = loaded_scenario.get('monthly_cpp', 0)
+            st.session_state['cpp_idx_p1'] = loaded_scenario.get('cpp_inflation_adjusted', True)
+            st.session_state['cpp_idx_p2'] = loaded_scenario.get('cpp_inflation_adjusted_p2', True)
+            st.session_state['cpp_idx'] = loaded_scenario.get('cpp_inflation_adjusted', True)
+            
+            # Private pension fields
+            st.session_state['priv_start_p1'] = loaded_scenario.get('private_pension_start_age', 65)
+            st.session_state['priv_start_p2'] = loaded_scenario.get('private_pension_start_age_p2', 65)
             st.session_state['priv_start'] = loaded_scenario.get('private_pension_start_age', 65)
+            st.session_state['priv_amt_p1'] = loaded_scenario.get('monthly_private_pension', 0)
+            st.session_state['priv_amt_p2'] = loaded_scenario.get('monthly_private_pension_p2', 0)
             st.session_state['priv_amt'] = loaded_scenario.get('monthly_private_pension', 0)
+            st.session_state['priv_idx_p1'] = loaded_scenario.get('private_pension_inflation_adjusted', True)
+            st.session_state['priv_idx_p2'] = loaded_scenario.get('private_pension_inflation_adjusted_p2', True)
             st.session_state['priv_idx'] = loaded_scenario.get('private_pension_inflation_adjusted', True)
+            
+            # Bridged pension fields
+            st.session_state['bridged_p1'] = loaded_scenario.get('bridged_enabled_p1', False)
+            st.session_state['bridged_p2'] = loaded_scenario.get('bridged_enabled_p2', False)
+            st.session_state['bridged_single'] = loaded_scenario.get('bridged_enabled_p1', False)
+            st.session_state['bridged_start_p1'] = loaded_scenario.get('bridged_start_age_p1', 999)
+            st.session_state['bridged_start_p2'] = loaded_scenario.get('bridged_start_age_p2', 999)
+            st.session_state['bridged_start_single'] = loaded_scenario.get('bridged_start_age_p1', 999)
+            st.session_state['bridged_end_p1'] = loaded_scenario.get('bridged_end_age_p1', 999)
+            st.session_state['bridged_end_p2'] = loaded_scenario.get('bridged_end_age_p2', 999)
+            st.session_state['bridged_end_single'] = loaded_scenario.get('bridged_end_age_p1', 999)
+            st.session_state['bridged_amt_p1'] = loaded_scenario.get('bridged_amount_p1', 0)
+            st.session_state['bridged_amt_p2'] = loaded_scenario.get('bridged_amount_p2', 0)
+            st.session_state['bridged_amt_single'] = loaded_scenario.get('bridged_amount_p1', 0)
+            
+            # Part-time work fields
             st.session_state['pt_income'] = loaded_scenario.get('part_time_income', 0)
+            st.session_state['pt_start_age'] = loaded_scenario.get('part_time_start_age', retirement_age)
+            st.session_state['pt_end_age'] = loaded_scenario.get('part_time_end_age', retirement_age)
             st.session_state['pt_idx'] = loaded_scenario.get('part_time_inflation_adjusted', False)
+            
+            # Other fields
+            st.session_state['stop_inv_age'] = loaded_scenario.get('stop_investments_age', retirement_age)
+            st.session_state['inflation_adj'] = loaded_scenario.get('inflation_adjustment_enabled', True)
+            st.session_state['ignore_clawback'] = loaded_scenario.get('ignore_oas_clawback', False)
+            
+            # Age reduction fields
             st.session_state['reduction_1_enabled'] = loaded_scenario.get('reduction_1_enabled', True)
             st.session_state['age_reduction_1_age'] = loaded_scenario.get('age_77_threshold', 77)
             st.session_state['age_reduction_1_pct'] = loaded_scenario.get('age_77_reduction', 10)
@@ -718,8 +770,8 @@ with tab1:
     
     with col4:
         retirement_year_one_income = st.number_input("Required Monthly Income (Today's $)", 0, 500000, get_default('retirement_year_one_income', 0), step=100, help="Monthly income needed in today's dollars")
-        inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), help="Increase required income each year with inflation")
-        ignore_oas_clawback = st.checkbox("Income Splitting (Ignore OAS Clawback)", get_default('ignore_oas_clawback', False), help="Enable if using income splitting to avoid OAS clawback")
+        inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), key="inflation_adj", help="Increase required income each year with inflation")
+        ignore_oas_clawback = st.checkbox("Income Splitting (Ignore OAS Clawback)", get_default('ignore_oas_clawback', False), key="ignore_clawback", help="Enable if using income splitting to avoid OAS clawback")
     
     st.markdown("### Financial Assumptions")
     col1, col2 = st.columns(2)
@@ -773,7 +825,8 @@ with tab2:
         stop_investments_age = st.number_input("Stop Contributions at Age", 
                                               min(current_age, retirement_age), 
                                               max(current_age, retirement_age), 
-                                              default_stop_age, 
+                                              default_stop_age,
+                                              key="stop_inv_age",
                                               help="Age when you'll stop making monthly contributions")
     
     # Calculate button
@@ -1084,12 +1137,12 @@ with tab4:
         c1, c2, c3 = st.columns(3)
         with c1:
             default_part_time_start = get_default('part_time_start_age', retirement_age)
-            part_time_start_age = st.number_input("Start Age", retirement_age, 100, default_part_time_start if default_part_time_start >= retirement_age else retirement_age)
+            part_time_start_age = st.number_input("Start Age", retirement_age, 100, default_part_time_start if default_part_time_start >= retirement_age else retirement_age, key="pt_start_age")
         with c2:
             default_part_time_end = get_default('part_time_end_age', retirement_age - 1)
             # Ensure default is within valid range
             default_part_time_end = max(part_time_start_age, min(default_part_time_end, 100))
-            part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end)
+            part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end, key="pt_end_age")
         with c3:
             part_time_income = st.number_input("$/Mo", 0, 20000, step=100, key="pt_income", help="Monthly part-time income in today's dollars")
     
