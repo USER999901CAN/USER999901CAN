@@ -697,6 +697,9 @@ with st.sidebar:
                     del st.session_state['results']
                 if 'inputs' in st.session_state:
                     del st.session_state['inputs']
+                # Clear all cached calculations
+                if 'calculated_scenarios' in st.session_state:
+                    st.session_state.calculated_scenarios = {}
                 st.session_state.show_clear_dialog = False
                 st.rerun()
         with col2:
@@ -754,6 +757,9 @@ with st.sidebar:
                             del st.session_state['results']
                         if 'inputs' in st.session_state:
                             del st.session_state['inputs']
+                    # Clear cached calculations for this scenario
+                    if 'calculated_scenarios' in st.session_state and name in st.session_state.calculated_scenarios:
+                        del st.session_state.calculated_scenarios[name]
                     st.rerun()
         
         # Export All as ZIP
@@ -1380,6 +1386,10 @@ if st.session_state.get('update_scenario_on_next_run', False):
         updated_data['scenario_name'] = st.session_state.active_scenario_name
         updated_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         st.session_state.saved_scenarios[st.session_state.active_scenario_name] = updated_data
+        
+        # Clear cached calculation for this scenario since it's been updated
+        if 'calculated_scenarios' in st.session_state and st.session_state.active_scenario_name in st.session_state.calculated_scenarios:
+            del st.session_state.calculated_scenarios[st.session_state.active_scenario_name]
         
         # Prepare download
         safe_name = st.session_state.active_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
