@@ -655,7 +655,7 @@ with st.sidebar:
         st.caption(f"{len(scenario_list)} loaded")
         
         # Action buttons for loaded scenario
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             # Update button - saves current inputs back to the loaded scenario
             if st.button("✏️ Update", use_container_width=True, help="Save current inputs to this scenario", key="update_scenario_btn"):
@@ -668,6 +668,31 @@ with st.sidebar:
             if st.button("🏷️ Rename", use_container_width=True, help="Rename this scenario", key="rename_scenario_btn"):
                 st.session_state.show_rename_dialog = True
                 st.rerun()
+        with col3:
+            # Fix Old Scenario button
+            if st.button("🔧 Fix", use_container_width=True, help="Re-export with current schema", key="fix_old_btn"):
+                if st.session_state.active_scenario_name:
+                    from datetime import datetime
+                    # Get the scenario and migrate it
+                    old_data = st.session_state.saved_scenarios[st.session_state.active_scenario_name]
+                    fixed_data = migrate_scenario_data(old_data.copy())
+                    fixed_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    
+                    # Save back to session
+                    st.session_state.saved_scenarios[st.session_state.active_scenario_name] = fixed_data
+                    
+                    # Prepare download
+                    safe_name = st.session_state.active_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+                    json_str = json.dumps(fixed_data, indent=2)
+                    
+                    st.success("✅ Fixed! Download below:")
+                    st.download_button(
+                        "💾 Download",
+                        data=json_str,
+                        file_name=f"{safe_name}_fixed.json",
+                        mime="application/json",
+                        key="fix_download"
+                    )
         
         # Clear button
         if st.button("🗑️ Clear All", use_container_width=True, help="Clear all scenarios", key="clear_all_btn"):
