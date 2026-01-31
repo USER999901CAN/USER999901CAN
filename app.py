@@ -908,14 +908,7 @@ with tab3:
     
     if couple_mode:
         # Person 1 Employer Pension
-        col_title, col_checkbox = st.columns([4, 1])
-        with col_title:
-            st.markdown("#### Person 1")
-        with col_checkbox:
-            st.markdown("")  # Spacer for alignment
-            bridged_enabled_p1 = st.checkbox("Add Bridged Amount", key="bridged_p1", 
-                                            value=get_default('bridged_enabled_p1', False),
-                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
+        st.markdown("#### Person 1")
         
         col1, col2, col3 = st.columns(3)
         
@@ -933,39 +926,36 @@ with tab3:
             private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx_p1", 
                                                             value=get_default('private_pension_inflation_adjusted', True))
         
-        # Bridged amount for Person 1
+        # Add Bridged Amount checkbox directly under Person 1
+        bridged_enabled_p1 = st.checkbox("Add Bridged Amount", key="bridged_p1", 
+                                        value=get_default('bridged_enabled_p1', False),
+                                        help="Enable if pension has a bridged amount until CPP/OAS starts")
+        
+        # Bridged amount fields on same row for Person 1
         if bridged_enabled_p1:
-            st.markdown("Bridged Amount (Person 1)")
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                bridged_start_age_p1 = st.number_input("Bridged Start Age", 50, 100, key="bridged_start_p1",
+                bridged_start_age_p1 = st.number_input("Bridge Start Age", 50, 100, key="bridged_start_p1",
                                                        value=get_default('bridged_start_age_p1', private_pension_start_age),
                                                        help="Age when bridged amount starts")
             with col2:
-                bridged_amount_p1 = st.number_input("Bridged Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p1",
+                # Fix: Ensure default value is within valid range
+                default_end_age = get_default('bridged_end_age_p1', 65)
+                default_end_age = max(bridged_start_age_p1, min(default_end_age, 100))
+                bridged_end_age_p1 = st.number_input("Bridge End Age", bridged_start_age_p1, 100, key="bridged_end_p1",
+                                                     value=default_end_age,
+                                                     help="Age when bridged amount ends (typically when CPP/OAS starts)")
+            with col3:
+                bridged_amount_p1 = st.number_input("Bridge Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p1",
                                                     value=get_default('bridged_amount_p1', 0),
                                                     help="Additional monthly amount during bridge period")
-            
-            # Fix: Ensure default value is within valid range
-            default_end_age = get_default('bridged_end_age_p1', 65)
-            default_end_age = max(bridged_start_age_p1, min(default_end_age, 100))
-            bridged_end_age_p1 = st.number_input("Bridged End Age", bridged_start_age_p1, 100, key="bridged_end_p1",
-                                                 value=default_end_age,
-                                                 help="Age when bridged amount ends (typically when CPP/OAS starts)")
         else:
             bridged_start_age_p1 = 999
             bridged_end_age_p1 = 999
             bridged_amount_p1 = 0
         
         # Person 2 Employer Pension
-        col_title, col_checkbox = st.columns([4, 1])
-        with col_title:
-            st.markdown("#### Person 2")
-        with col_checkbox:
-            st.markdown("")  # Spacer for alignment
-            bridged_enabled_p2 = st.checkbox("Add Bridged Amount", key="bridged_p2", 
-                                            value=get_default('bridged_enabled_p2', False),
-                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
+        st.markdown("#### Person 2")
         
         col1, col2, col3 = st.columns(3)
         
@@ -983,40 +973,35 @@ with tab3:
             private_pension_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="priv_idx_p2", 
                                                                value=get_default('private_pension_inflation_adjusted_p2', True))
         
-        # Bridged amount for Person 2
+        # Add Bridged Amount checkbox directly under Person 2
+        bridged_enabled_p2 = st.checkbox("Add Bridged Amount", key="bridged_p2", 
+                                        value=get_default('bridged_enabled_p2', False),
+                                        help="Enable if pension has a bridged amount until CPP/OAS starts")
+        
+        # Bridged amount fields on same row for Person 2
         if bridged_enabled_p2:
-            st.markdown("Bridged Amount (Person 2)")
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                bridged_start_age_p2 = st.number_input("Bridged Start Age", 50, 100, key="bridged_start_p2",
+                bridged_start_age_p2 = st.number_input("Bridge Start Age", 50, 100, key="bridged_start_p2",
                                                        value=get_default('bridged_start_age_p2', private_pension_start_age_p2),
                                                        help="Age when bridged amount starts")
             with col2:
-                bridged_amount_p2 = st.number_input("Bridged Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p2",
+                # Fix: Ensure default value is within valid range
+                default_end_age = get_default('bridged_end_age_p2', 65)
+                default_end_age = max(bridged_start_age_p2, min(default_end_age, 100))
+                bridged_end_age_p2 = st.number_input("Bridge End Age", bridged_start_age_p2, 100, key="bridged_end_p2",
+                                                     value=default_end_age,
+                                                     help="Age when bridged amount ends (typically when CPP/OAS starts)")
+            with col3:
+                bridged_amount_p2 = st.number_input("Bridge Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p2",
                                                     value=get_default('bridged_amount_p2', 0),
                                                     help="Additional monthly amount during bridge period")
-            
-            # Fix: Ensure default value is within valid range
-            default_end_age = get_default('bridged_end_age_p2', 65)
-            default_end_age = max(bridged_start_age_p2, min(default_end_age, 100))
-            bridged_end_age_p2 = st.number_input("Bridged End Age", bridged_start_age_p2, 100, key="bridged_end_p2",
-                                                 value=default_end_age,
-                                                 help="Age when bridged amount ends (typically when CPP/OAS starts)")
         else:
             bridged_start_age_p2 = 999
             bridged_end_age_p2 = 999
             bridged_amount_p2 = 0
     else:
         # Single person Employer Pension
-        col_title, col_checkbox = st.columns([4, 1])
-        with col_title:
-            st.markdown("### Employer/Private Pension")
-        with col_checkbox:
-            st.markdown("")  # Spacer for alignment
-            bridged_enabled_p1 = st.checkbox("Add Bridged Amount", key="bridged_single", 
-                                            value=get_default('bridged_enabled_p1', False),
-                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
-        
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -1033,25 +1018,29 @@ with tab3:
             private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", 
                                                             value=get_default('private_pension_inflation_adjusted', True))
         
-        # Bridged amount for single person
+        # Add Bridged Amount checkbox
+        bridged_enabled_p1 = st.checkbox("Add Bridged Amount", key="bridged_single", 
+                                        value=get_default('bridged_enabled_p1', False),
+                                        help="Enable if pension has a bridged amount until CPP/OAS starts")
+        
+        # Bridged amount fields on same row for single person
         if bridged_enabled_p1:
-            st.markdown("Bridged Amount")
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                bridged_start_age_p1 = st.number_input("Bridged Start Age", 50, 100, key="bridged_start_single",
+                bridged_start_age_p1 = st.number_input("Bridge Start Age", 50, 100, key="bridged_start_single",
                                                        value=get_default('bridged_start_age_p1', private_pension_start_age),
                                                        help="Age when bridged amount starts")
             with col2:
-                bridged_amount_p1 = st.number_input("Bridged Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_single",
+                # Fix: Ensure default value is within valid range
+                default_end_age = get_default('bridged_end_age_p1', 65)
+                default_end_age = max(bridged_start_age_p1, min(default_end_age, 100))
+                bridged_end_age_p1 = st.number_input("Bridge End Age", bridged_start_age_p1, 100, key="bridged_end_single",
+                                                     value=default_end_age,
+                                                     help="Age when bridged amount ends (typically when CPP/OAS starts)")
+            with col3:
+                bridged_amount_p1 = st.number_input("Bridge Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_single",
                                                     value=get_default('bridged_amount_p1', 0),
                                                     help="Additional monthly amount during bridge period")
-            
-            # Fix: Ensure default value is within valid range
-            default_end_age = get_default('bridged_end_age_p1', 65)
-            default_end_age = max(bridged_start_age_p1, min(default_end_age, 100))
-            bridged_end_age_p1 = st.number_input("Bridged End Age", bridged_start_age_p1, 100, key="bridged_end_single",
-                                                 value=default_end_age,
-                                                 help="Age when bridged amount ends (typically when CPP/OAS starts)")
         else:
             bridged_start_age_p1 = 999
             bridged_end_age_p1 = 999
