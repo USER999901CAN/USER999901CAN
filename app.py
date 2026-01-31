@@ -1078,7 +1078,9 @@ with tab4:
             part_time_start_age = st.number_input("Start Age", retirement_age, 100, default_part_time_start if default_part_time_start >= retirement_age else retirement_age)
         with c2:
             default_part_time_end = get_default('part_time_end_age', retirement_age - 1)
-            part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end if default_part_time_end >= part_time_start_age else retirement_age)
+            # Ensure default is within valid range
+            default_part_time_end = max(part_time_start_age, min(default_part_time_end, 100))
+            part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end)
         with c3:
             part_time_income = st.number_input("$/Mo", 0, 20000, step=100, key="pt_income", help="Monthly part-time income in today's dollars")
     
