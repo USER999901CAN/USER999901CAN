@@ -567,11 +567,10 @@ with st.sidebar:
         with col1:
             # Update button - saves current inputs back to the loaded scenario
             if st.button("✏️ Update", use_container_width=True, help="Save current inputs to this scenario"):
-                if st.session_state.active_scenario_name and 'inputs' in st.session_state:
-                    # Update the scenario with current inputs
-                    st.session_state.saved_scenarios[st.session_state.active_scenario_name] = st.session_state.inputs.copy()
-                    st.success(f"Updated '{st.session_state.active_scenario_name}'")
-                    st.rerun()
+                if st.session_state.active_scenario_name:
+                    # Mark that we want to update on next run (after inputs are collected)
+                    st.session_state.update_scenario_on_next_run = True
+                    st.info("Click Calculate to save changes to scenario")
         with col2:
             # Rename button
             if st.button("🏷️ Rename", use_container_width=True, help="Rename this scenario"):
@@ -1359,6 +1358,31 @@ inputs = {
     'lump_sum_withdrawals': st.session_state.get('lump_sum_withdrawals', [])
 }
 st.session_state.inputs = inputs
+
+# Handle scenario update if requested
+if st.session_state.get('update_scenario_on_next_run', False):
+    if st.session_state.active_scenario_name:
+        from datetime import datetime
+        
+        # Update the scenario in memory
+        updated_data = inputs.copy()
+        updated_data['scenario_name'] = st.session_state.active_scenario_name
+        updated_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        st.session_state.saved_scenarios[st.session_state.active_scenario_name] = updated_data
+        
+        # Prepare download
+        safe_name = st.session_state.active_scenario_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+        json_str = json.dumps(updated_data, indent=2)
+        
+        st.success(f"✅ Updated '{st.session_state.active_scenario_name}'")
+        st.download_button(
+            "💾 Download Updated File",
+            data=json_str,
+            file_name=f"{safe_name}.json",
+            mime="application/json",
+            key="update_download"
+        )
+        st.session_state.update_scenario_on_next_run = False
 
 # Check if any calculate button was pressed
 calculate_button = (calculate_button_tab1 or calculate_button_tab2 or calculate_button_tab3 or 
