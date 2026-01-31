@@ -104,23 +104,49 @@ class MonteCarloSimulator:
                     else:
                         part_time = 0
                     
-                    if age >= self.inputs['pension_start_age']:
-                        pension = self.inputs['monthly_pension']
-                        if self.inputs['pension_inflation_adjusted']:
-                            years_since_pension = age - self.inputs['pension_start_age']
-                            pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_since_pension)
-                    else:
-                        pension = 0
+                    # OAS - Person 1
+                    oas_p1 = 0
+                    if age >= self.inputs.get('oas_start_age', 65):
+                        oas_p1 = self.inputs.get('monthly_oas', 0)
+                        if self.inputs.get('oas_inflation_adjusted', True):
+                            oas_p1 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                     
-                    # Private pension
-                    private_pension = 0
+                    # OAS - Person 2
+                    oas_p2 = 0
+                    if self.inputs.get('couple_mode', False) and age >= self.inputs.get('oas_start_age_p2', 65):
+                        oas_p2 = self.inputs.get('monthly_oas_p2', 0)
+                        if self.inputs.get('oas_inflation_adjusted_p2', True):
+                            oas_p2 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                    
+                    # CPP - Person 1
+                    cpp_p1 = 0
+                    if age >= self.inputs.get('cpp_start_age', 70):
+                        cpp_p1 = self.inputs.get('monthly_cpp', 0)
+                        if self.inputs.get('cpp_inflation_adjusted', True):
+                            cpp_p1 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                    
+                    # CPP - Person 2
+                    cpp_p2 = 0
+                    if self.inputs.get('couple_mode', False) and age >= self.inputs.get('cpp_start_age_p2', 70):
+                        cpp_p2 = self.inputs.get('monthly_cpp_p2', 0)
+                        if self.inputs.get('cpp_inflation_adjusted_p2', True):
+                            cpp_p2 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                    
+                    # Private pension - Person 1
+                    private_pension_p1 = 0
                     if age >= self.inputs.get('private_pension_start_age', 999):
-                        private_pension = self.inputs.get('monthly_private_pension', 0)
+                        private_pension_p1 = self.inputs.get('monthly_private_pension', 0)
                         if self.inputs.get('private_pension_inflation_adjusted', False):
-                            years_since_private = age - self.inputs['private_pension_start_age']
-                            private_pension *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_since_private)
+                            private_pension_p1 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                     
-                    total_pension = pension + private_pension
+                    # Private pension - Person 2
+                    private_pension_p2 = 0
+                    if self.inputs.get('couple_mode', False) and age >= self.inputs.get('private_pension_start_age_p2', 999):
+                        private_pension_p2 = self.inputs.get('monthly_private_pension_p2', 0)
+                        if self.inputs.get('private_pension_inflation_adjusted_p2', False):
+                            private_pension_p2 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                    
+                    total_pension = oas_p1 + oas_p2 + cpp_p1 + cpp_p2 + private_pension_p1 + private_pension_p2
                     
                     # Withdrawals
                     monthly_from_other = part_time + total_pension
