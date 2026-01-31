@@ -461,7 +461,7 @@ with st.sidebar:
         st.caption("No scenarios")
     
     # Quick Actions - vertical buttons
-    if st.button("➕ New", use_container_width=True, help="New scenario"):
+    if st.button("💾 Save", use_container_width=True, help="Save scenario"):
         st.session_state.show_new_dialog = True
     
     if st.button("📥 Import", use_container_width=True, help="Import from file"):
@@ -591,25 +591,11 @@ with st.sidebar:
     if scenario_list:
         st.markdown("---")
         for name in scenario_list:
-            col1, col2, col3 = st.columns([5, 1, 1])
+            col1, col2 = st.columns([6, 1])
             with col1:
                 prefix = "🎯" if name == st.session_state.active_scenario_name else "📄"
                 st.caption(f"{prefix} {name}")
             with col2:
-                # Download individual
-                if 'inputs' in st.session_state and name == st.session_state.active_scenario_name:
-                    data = st.session_state.inputs.copy()
-                    data['scenario_name'] = name
-                    safe_name = name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-                    st.download_button(
-                        "💾",
-                        data=json.dumps(data, indent=2),
-                        file_name=f"{safe_name}.json",
-                        mime="application/json",
-                        key=f"dl_{name}",
-                        help="Download"
-                    )
-            with col3:
                 if st.button("❌", key=f"del_{name}", help="Delete"):
                     del st.session_state.saved_scenarios[name]
                     if st.session_state.active_scenario_name == name:
