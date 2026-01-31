@@ -908,7 +908,13 @@ with tab3:
     
     if couple_mode:
         # Person 1 Employer Pension
-        st.markdown("#### Person 1")
+        col_title, col_checkbox = st.columns([3, 1])
+        with col_title:
+            st.markdown("#### Person 1")
+        with col_checkbox:
+            bridged_enabled_p1 = st.checkbox("Add Bridge", key="bridged_p1", 
+                                            value=get_default('bridged_enabled_p1', False),
+                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
         
         col1, col2, col3 = st.columns(3)
         
@@ -925,11 +931,6 @@ with tab3:
         with col3:
             private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx_p1", 
                                                             value=get_default('private_pension_inflation_adjusted', True))
-        
-        # Add Bridged Amount checkbox directly under Person 1
-        bridged_enabled_p1 = st.checkbox("Add Bridged Amount", key="bridged_p1", 
-                                        value=get_default('bridged_enabled_p1', False),
-                                        help="Enable if pension has a bridged amount until CPP/OAS starts")
         
         # Bridged amount fields on same row for Person 1
         if bridged_enabled_p1:
@@ -955,7 +956,13 @@ with tab3:
             bridged_amount_p1 = 0
         
         # Person 2 Employer Pension
-        st.markdown("#### Person 2")
+        col_title, col_checkbox = st.columns([3, 1])
+        with col_title:
+            st.markdown("#### Person 2")
+        with col_checkbox:
+            bridged_enabled_p2 = st.checkbox("Add Bridge", key="bridged_p2", 
+                                            value=get_default('bridged_enabled_p2', False),
+                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
         
         col1, col2, col3 = st.columns(3)
         
@@ -972,11 +979,6 @@ with tab3:
         with col3:
             private_pension_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="priv_idx_p2", 
                                                                value=get_default('private_pension_inflation_adjusted_p2', True))
-        
-        # Add Bridged Amount checkbox directly under Person 2
-        bridged_enabled_p2 = st.checkbox("Add Bridged Amount", key="bridged_p2", 
-                                        value=get_default('bridged_enabled_p2', False),
-                                        help="Enable if pension has a bridged amount until CPP/OAS starts")
         
         # Bridged amount fields on same row for Person 2
         if bridged_enabled_p2:
@@ -1002,6 +1004,14 @@ with tab3:
             bridged_amount_p2 = 0
     else:
         # Single person Employer Pension
+        col_title, col_checkbox = st.columns([3, 1])
+        with col_title:
+            st.markdown("### Employer/Private Pension")
+        with col_checkbox:
+            bridged_enabled_p1 = st.checkbox("Add Bridge", key="bridged_single", 
+                                            value=get_default('bridged_enabled_p1', False),
+                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
+        
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -1017,11 +1027,6 @@ with tab3:
         with col3:
             private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", 
                                                             value=get_default('private_pension_inflation_adjusted', True))
-        
-        # Add Bridged Amount checkbox
-        bridged_enabled_p1 = st.checkbox("Add Bridged Amount", key="bridged_single", 
-                                        value=get_default('bridged_enabled_p1', False),
-                                        help="Enable if pension has a bridged amount until CPP/OAS starts")
         
         # Bridged amount fields on same row for single person
         if bridged_enabled_p1:
