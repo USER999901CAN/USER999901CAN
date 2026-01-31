@@ -1181,8 +1181,11 @@ with tab3:
         if bridged_enabled_p1:
             col1, col2, col3 = st.columns(3)
             with col1:
+                # Ensure default value is within valid range (50-100)
+                default_bridge_start = min(get_default('bridged_start_age_p1', private_pension_start_age), 100)
+                default_bridge_start = max(default_bridge_start, 50)
                 bridged_start_age_p1 = st.number_input("Bridge Start Age", 50, 100, key="bridged_start_p1",
-                                                       value=get_default('bridged_start_age_p1', private_pension_start_age),
+                                                       value=default_bridge_start,
                                                        help="Age when bridged amount starts")
             with col2:
                 # Fix: Ensure default value is within valid range
@@ -1228,8 +1231,11 @@ with tab3:
         if bridged_enabled_p2:
             col1, col2, col3 = st.columns(3)
             with col1:
+                # Ensure default value is within valid range (50-100)
+                default_bridge_start = min(get_default('bridged_start_age_p2', private_pension_start_age_p2), 100)
+                default_bridge_start = max(default_bridge_start, 50)
                 bridged_start_age_p2 = st.number_input("Bridge Start Age", 50, 100, key="bridged_start_p2",
-                                                       value=get_default('bridged_start_age_p2', private_pension_start_age_p2),
+                                                       value=default_bridge_start,
                                                        help="Age when bridged amount starts")
             with col2:
                 # Fix: Ensure default value is within valid range
@@ -1273,8 +1279,11 @@ with tab3:
         if bridged_enabled_p1:
             col1, col2, col3 = st.columns(3)
             with col1:
+                # Ensure default value is within valid range (50-100)
+                default_bridge_start = min(get_default('bridged_start_age_p1', private_pension_start_age), 100)
+                default_bridge_start = max(default_bridge_start, 50)
                 bridged_start_age_p1 = st.number_input("Bridge Start Age", 50, 100, key="bridged_start_single",
-                                                       value=get_default('bridged_start_age_p1', private_pension_start_age),
+                                                       value=default_bridge_start,
                                                        help="Age when bridged amount starts")
             with col2:
                 # Fix: Ensure default value is within valid range
