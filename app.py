@@ -470,60 +470,64 @@ with st.sidebar:
     if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
         st.session_state.show_clear_dialog = True
     
-    # New Scenario Dialog - one-step process
+    # New Scenario Dialog - one-click save & download
     if st.session_state.get('show_new_dialog', False):
         st.markdown("---")
         new_name = st.text_input("Name:", placeholder="My Scenario", key="new_name_input")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Save", disabled=not new_name, use_container_width=True):
-                if new_name and new_name not in st.session_state.saved_scenarios:
-                    from datetime import datetime
-                    
-                    # Use current inputs or defaults
-                    if 'inputs' in st.session_state:
-                        data = st.session_state.inputs.copy()
-                    else:
-                        data = {
-                            'current_age': 30, 'retirement_age': 65, 'tfsa': 0, 'rrsp': 0,
-                            'non_registered': 0, 'lira': 0, 'total_investments': 0,
-                            'monthly_investments': 0, 'investment_return': 6.0,
-                            'yearly_inflation': 2.1, 'retirement_year_one_income': 0,
-                            'couple_mode': False, 'oas_start_age': 65, 'monthly_oas': 0,
-                            'cpp_start_age': 70, 'monthly_cpp': 0,
-                            'private_pension_start_age': 500, 'monthly_private_pension': 0,
-                            'part_time_income': 0, 'lump_sums': [], 'lump_sum_withdrawals': []
-                        }
-                    
-                    data['scenario_name'] = new_name
-                    data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    
-                    # Add to session and set as active
+        if new_name and new_name not in st.session_state.saved_scenarios:
+            from datetime import datetime
+            
+            # Prepare data
+            if 'inputs' in st.session_state:
+                data = st.session_state.inputs.copy()
+            else:
+                data = {
+                    'current_age': 30, 'retirement_age': 65, 'tfsa': 0, 'rrsp': 0,
+                    'non_registered': 0, 'lira': 0, 'total_investments': 0,
+                    'monthly_investments': 0, 'investment_return': 6.0,
+                    'yearly_inflation': 2.1, 'retirement_year_one_income': 0,
+                    'couple_mode': False, 'oas_start_age': 65, 'monthly_oas': 0,
+                    'cpp_start_age': 70, 'monthly_cpp': 0,
+                    'private_pension_start_age': 500, 'monthly_private_pension': 0,
+                    'part_time_income': 0, 'lump_sums': [], 'lump_sum_withdrawals': []
+                }
+            
+            data['scenario_name'] = new_name
+            data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Prepare download
+            safe_name = new_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
+            json_str = json.dumps(data, indent=2)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                # Download button that also saves to session
+                if st.download_button(
+                    "💾 Save",
+                    data=json_str,
+                    file_name=f"{safe_name}.json",
+                    mime="application/json",
+                    use_container_width=True,
+                    key=f"save_dl_{new_name}"
+                ):
+                    # Save to session after download initiated
                     st.session_state.saved_scenarios[new_name] = data
                     st.session_state.active_scenario_name = new_name
                     st.session_state.loaded_scenario = data
-                    
-                    # Trigger download immediately
-                    safe_name = new_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-                    json_str = json.dumps(data, indent=2)
-                    
-                    # Use download button that auto-triggers
-                    st.download_button(
-                        "⬇️ Downloading...",
-                        data=json_str,
-                        file_name=f"{safe_name}.json",
-                        mime="application/json",
-                        use_container_width=True,
-                        key=f"auto_dl_{new_name}"
-                    )
-                    
                     st.session_state.show_new_dialog = False
-                    st.success(f"✅ Saved: {new_name}")
-                else:
-                    st.error("Name exists!")
-        
-        with col2:
+                    st.rerun()
+            
+            with col2:
+                if st.button("Cancel", use_container_width=True):
+                    st.session_state.show_new_dialog = False
+                    st.rerun()
+        elif new_name in st.session_state.saved_scenarios:
+            st.error("Name exists!")
+            if st.button("Cancel", use_container_width=True):
+                st.session_state.show_new_dialog = False
+                st.rerun()
+        else:
             if st.button("Cancel", use_container_width=True):
                 st.session_state.show_new_dialog = False
                 st.rerun()
