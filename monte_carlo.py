@@ -18,13 +18,17 @@ class MonteCarloSimulator:
         retirement_age = self.inputs['retirement_age']
         max_age = 100
         
-        # Get lump sums and create lookup dict
+        # Get lump sums and create lookup dict - SAFETY CHECK
         lump_sums = self.inputs.get('lump_sums', [])
-        lump_sum_by_age = {ls['age']: ls['amount'] for ls in lump_sums if ls['amount'] > 0}
+        if not isinstance(lump_sums, list):
+            lump_sums = []
+        lump_sum_by_age = {ls['age']: ls['amount'] for ls in lump_sums if isinstance(ls, dict) and ls.get('amount', 0) > 0}
         
-        # Get lump sum withdrawals and create lookup dict
+        # Get lump sum withdrawals and create lookup dict - SAFETY CHECK
         lump_withdrawals = self.inputs.get('lump_sum_withdrawals', [])
-        lump_withdrawal_by_age = {lw['age']: lw['amount'] for lw in lump_withdrawals if lw['amount'] > 0}
+        if not isinstance(lump_withdrawals, list):
+            lump_withdrawals = []
+        lump_withdrawal_by_age = {lw['age']: lw['amount'] for lw in lump_withdrawals if isinstance(lw, dict) and lw.get('amount', 0) > 0}
         
         successes = 0
         failures = 0
