@@ -389,9 +389,12 @@ with st.sidebar:
             font-size: 0.65rem;
         }
         .sidebar [data-testid="stFileUploader"] section {
-            padding: 0.3rem;
+            padding: 0.3rem 0;
             border: 1px dashed rgba(49, 51, 63, 0.2);
             border-radius: 0.25rem;
+        }
+        .sidebar [data-testid="stFileUploader"] section > div {
+            padding: 0 0.3rem;
         }
         .sidebar [data-testid="stFileUploader"] button {
             padding: 0.15rem 0.3rem;
@@ -399,6 +402,7 @@ with st.sidebar:
             width: 100%;
             background-color: rgb(255, 255, 255);
             border: 1px solid rgba(49, 51, 63, 0.2);
+            margin: 0;
         }
         .sidebar [data-testid="stFileUploader"] button:hover {
             border-color: rgb(255, 75, 75);
