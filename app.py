@@ -470,15 +470,16 @@ with st.sidebar:
     if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
         st.session_state.show_clear_dialog = True
     
-    # New Scenario Dialog - streamlined
+    # New Scenario Dialog - one-step process
     if st.session_state.get('show_new_dialog', False):
         st.markdown("---")
-        new_name = st.text_input("Name:", placeholder="My Scenario", key="new_name")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Create", disabled=not new_name, use_container_width=True):
-                if new_name and new_name not in st.session_state.saved_scenarios:
+        with st.form("new_scenario_form", clear_on_submit=True):
+            new_name = st.text_input("Name:", placeholder="My Scenario", key="new_name_form")
+            submitted = st.form_submit_button("Create & Save", use_container_width=True)
+            
+            if submitted and new_name:
+                if new_name not in st.session_state.saved_scenarios:
                     from datetime import datetime
                     
                     # Use current inputs or defaults
@@ -499,29 +500,42 @@ with st.sidebar:
                     data['scenario_name'] = new_name
                     data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     
-                    # Add to session
+                    # Add to session and set as active
                     st.session_state.saved_scenarios[new_name] = data
                     st.session_state.active_scenario_name = new_name
+                    st.session_state.loaded_scenario = data
                     
-                    # Auto-download JSON
+                    # Prepare download
                     safe_name = new_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-                    json_str = json.dumps(data, indent=2)
-                    
-                    st.download_button(
-                        "⬇️ Download",
-                        data=json_str,
-                        file_name=f"{safe_name}.json",
-                        mime="application/json",
-                        use_container_width=True
-                    )
+                    st.session_state.pending_download = {
+                        'data': json.dumps(data, indent=2),
+                        'filename': f"{safe_name}.json",
+                        'name': new_name
+                    }
                     
                     st.session_state.show_new_dialog = False
-                    st.success(f"✅ {new_name}")
+                    st.rerun()
+                else:
+                    st.error("Name already exists!")
         
-        with col2:
-            if st.button("Cancel", use_container_width=True):
-                st.session_state.show_new_dialog = False
-                st.rerun()
+        if st.button("Cancel", use_container_width=True):
+            st.session_state.show_new_dialog = False
+            st.rerun()
+    
+    # Show pending download if exists
+    if 'pending_download' in st.session_state:
+        pd = st.session_state.pending_download
+        st.success(f"✅ Created: {pd['name']}")
+        st.download_button(
+            "💾 Download JSON",
+            data=pd['data'],
+            file_name=pd['filename'],
+            mime="application/json",
+            use_container_width=True
+        )
+        if st.button("Done", use_container_width=True):
+            del st.session_state.pending_download
+            st.rerun()
     
     # Import Dialog - auto-load on file select
     if st.session_state.get('show_import_dialog', False):
