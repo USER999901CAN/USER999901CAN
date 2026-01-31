@@ -1550,12 +1550,12 @@ if 'results' in st.session_state and st.session_state.results:
     # Based on absolute balance thresholds throughout retirement
     financial_health_score = 100
     
-    # Detect shortfall (when balance hits zero before age 100)
+    # Detect shortfall (when balance hits zero before age 100) - OPTIMIZED
     shortfall_age = None
-    for idx, row in df.iterrows():
-        if row['Age'] >= retirement_age and row['Investment Balance End'] <= 0 and row['Age'] < 100:
-            shortfall_age = int(row['Age'])
-            break
+    shortfall_mask = (df['Age'] >= retirement_age) & (df['Investment Balance End'] <= 0) & (df['Age'] < 100)
+    shortfall_rows = df[shortfall_mask]
+    if not shortfall_rows.empty:
+        shortfall_age = int(shortfall_rows.iloc[0]['Age'])
     
     # CRITICAL: If there's a shortfall (funds run out), score is automatically 0
     if shortfall_age:

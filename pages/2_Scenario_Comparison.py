@@ -218,20 +218,20 @@ if st.button("🔄 Compare Scenarios", type="primary"):
                 age_95_row = df[df['Age'] == 95]
                 balance_at_95 = age_95_row['Investment Balance End'].iloc[0] if not age_95_row.empty else 0
                 
-                # Detect shortfall (when balance hits zero before age 100)
+                # Detect shortfall (when balance hits zero before age 100) - OPTIMIZED
                 shortfall_age = None
                 initial_shortfall = 0
-                for idx, row in df.iterrows():
-                    if row['Age'] >= retirement_age and row['Investment Balance End'] <= 0 and row['Age'] < 100:
-                        shortfall_age = int(row['Age'])
-                        # Initial shortfall is the required withdrawal that couldn't be met
-                        # Look at the monthly shortfall or the withdrawal amount that year
-                        if 'Monthly Shortfall' in row and row['Monthly Shortfall'] > 0:
-                            initial_shortfall = row['Monthly Shortfall']
-                        elif row['Investment Withdrawal'] > 0:
-                            # If balance is 0 but withdrawal was needed, that's the shortfall
-                            initial_shortfall = row['Investment Withdrawal']
-                        break
+                shortfall_mask = (df['Age'] >= retirement_age) & (df['Investment Balance End'] <= 0) & (df['Age'] < 100)
+                shortfall_rows = df[shortfall_mask]
+                if not shortfall_rows.empty:
+                    first_shortfall = shortfall_rows.iloc[0]
+                    shortfall_age = int(first_shortfall['Age'])
+                    # Initial shortfall is the required withdrawal that couldn't be met
+                    if 'Monthly Shortfall' in first_shortfall and first_shortfall['Monthly Shortfall'] > 0:
+                        initial_shortfall = first_shortfall['Monthly Shortfall']
+                    elif first_shortfall['Investment Withdrawal'] > 0:
+                        # If balance is 0 but withdrawal was needed, that's the shortfall
+                        initial_shortfall = first_shortfall['Investment Withdrawal']
                 
                 # Calculate Financial Health Score (0-100)
                 # Based on absolute balance thresholds throughout retirement
@@ -490,13 +490,11 @@ if 'comparison_data' in st.session_state and st.session_state.comparison_data:
                         hovertemplate='<b>Part-Time</b><br>Age: %{x}<br>$%{y:,.0f}<extra></extra>'
                     ), row=row, col=col)
                     
-                    # Cap investment withdrawal at what's actually available
-                    capped_withdrawals = []
-                    for _, r in retirement_df.iterrows():
-                        if r['Investment Balance Start'] > 0:
-                            capped_withdrawals.append(r['Investment Withdrawal'])
-                        else:
-                            capped_withdrawals.append(0)
+                    # Cap investment withdrawal at what's actually available - OPTIMIZED
+                    capped_withdrawals = retirement_df.apply(
+                        lambda r: r['Investment Withdrawal'] if r['Investment Balance Start'] > 0 else 0,
+                        axis=1
+                    ).tolist()
                     
                     fig.add_trace(go.Scatter(
                         x=retirement_df['Age'],
@@ -607,13 +605,11 @@ if 'comparison_data' in st.session_state and st.session_state.comparison_data:
                         hovertemplate='<b>Part-Time</b><br>Age: %{x}<br>Amount: $%{y:,.0f}<extra></extra>'
                     ))
                     
-                    # Cap investment withdrawal at what's actually available (when balance > 0)
-                    capped_withdrawals = []
-                    for _, row in retirement_df.iterrows():
-                        if row['Investment Balance Start'] > 0:
-                            capped_withdrawals.append(row['Investment Withdrawal'])
-                        else:
-                            capped_withdrawals.append(0)
+                    # Cap investment withdrawal at what's actually available (when balance > 0) - OPTIMIZED
+                    capped_withdrawals = retirement_df.apply(
+                        lambda row: row['Investment Withdrawal'] if row['Investment Balance Start'] > 0 else 0,
+                        axis=1
+                    ).tolist()
                     
                     fig.add_trace(go.Scatter(
                         x=retirement_df['Age'],
