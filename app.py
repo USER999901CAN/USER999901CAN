@@ -570,15 +570,21 @@ with st.sidebar:
                 if st.session_state.active_scenario_name:
                     # Mark that we want to update on next run (after inputs are collected)
                     st.session_state.update_scenario_on_next_run = True
-                    st.info("Click Calculate to save changes to scenario")
+                    st.rerun()
         with col2:
             # Rename button
             if st.button("🏷️ Rename", use_container_width=True, help="Rename this scenario", key="rename_scenario_btn"):
                 st.session_state.show_rename_dialog = True
+                st.rerun()
         
         # Clear button
         if st.button("🗑️ Clear All", use_container_width=True, help="Clear all scenarios", key="clear_all_btn"):
             st.session_state.show_clear_dialog = True
+            st.rerun()
+        
+        # Show info message if update flag is set
+        if st.session_state.get('update_scenario_on_next_run', False):
+            st.info("Click Calculate to save changes to scenario")
     
     st.markdown("---")
     
