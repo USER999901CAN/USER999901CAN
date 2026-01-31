@@ -563,6 +563,21 @@ with st.sidebar:
             st.rerun()
         
         st.caption(f"{len(scenario_list)} loaded")
+        
+        # Action buttons for loaded scenario
+        col1, col2 = st.columns(2)
+        with col1:
+            # Update button - saves current inputs back to the loaded scenario
+            if st.button("✏️ Update", use_container_width=True, help="Save current inputs to this scenario"):
+                if st.session_state.active_scenario_name and 'inputs' in st.session_state:
+                    # Update the scenario with current inputs
+                    st.session_state.saved_scenarios[st.session_state.active_scenario_name] = st.session_state.inputs.copy()
+                    st.success(f"Updated '{st.session_state.active_scenario_name}'")
+                    st.rerun()
+        with col2:
+            # Rename button
+            if st.button("🏷️ Rename", use_container_width=True, help="Rename this scenario"):
+                st.session_state.show_rename_dialog = True
     
     st.markdown("---")
     
@@ -681,6 +696,37 @@ with st.sidebar:
         with col2:
             if st.button("No", use_container_width=True):
                 st.session_state.show_clear_dialog = False
+                st.rerun()
+    
+    # Rename Scenario Dialog
+    if st.session_state.get('show_rename_dialog', False):
+        st.markdown("---")
+        st.subheader("Rename Scenario")
+        old_name = st.session_state.active_scenario_name
+        new_name = st.text_input("New Name:", value=old_name, key="rename_input")
+        
+        if new_name and new_name != old_name:
+            if new_name in st.session_state.saved_scenarios:
+                st.error("Name already exists!")
+            else:
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("Rename", use_container_width=True):
+                        # Copy scenario with new name
+                        st.session_state.saved_scenarios[new_name] = st.session_state.saved_scenarios[old_name]
+                        # Delete old name
+                        del st.session_state.saved_scenarios[old_name]
+                        # Update active scenario name
+                        st.session_state.active_scenario_name = new_name
+                        st.session_state.show_rename_dialog = False
+                        st.rerun()
+                with col2:
+                    if st.button("Cancel", use_container_width=True):
+                        st.session_state.show_rename_dialog = False
+                        st.rerun()
+        else:
+            if st.button("Cancel", use_container_width=True):
+                st.session_state.show_rename_dialog = False
                 st.rerun()
     
     # Loaded Scenarios List - compact
