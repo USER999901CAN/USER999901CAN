@@ -692,6 +692,11 @@ with st.sidebar:
                 st.session_state.saved_scenarios = {}
                 st.session_state.active_scenario_name = None
                 st.session_state.loaded_scenario = None
+                # Clear results and inputs when clearing all scenarios
+                if 'results' in st.session_state:
+                    del st.session_state['results']
+                if 'inputs' in st.session_state:
+                    del st.session_state['inputs']
                 st.session_state.show_clear_dialog = False
                 st.rerun()
         with col2:
@@ -743,6 +748,12 @@ with st.sidebar:
                     del st.session_state.saved_scenarios[name]
                     if st.session_state.active_scenario_name == name:
                         st.session_state.active_scenario_name = None
+                        st.session_state.loaded_scenario = None
+                        # Clear results and inputs when deleting active scenario
+                        if 'results' in st.session_state:
+                            del st.session_state['results']
+                        if 'inputs' in st.session_state:
+                            del st.session_state['inputs']
                     st.rerun()
         
         # Export All as ZIP
