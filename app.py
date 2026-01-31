@@ -373,6 +373,13 @@ with st.sidebar:
         .sidebar .stButton button {
             padding: 0.15rem 0.3rem;
             font-size: 0.65rem;
+            width: 100%;
+            background-color: rgb(255, 255, 255);
+            border: 1px solid rgba(49, 51, 63, 0.2);
+        }
+        .sidebar .stButton button:hover {
+            border-color: rgb(255, 75, 75);
+            color: rgb(255, 75, 75);
         }
         .sidebar .stCaption {
             font-size: 0.6rem;
