@@ -634,23 +634,6 @@ with st.sidebar:
                     use_container_width=True
                 )
 
-# Main content continues with input parameters 
-            'priv_start', 'priv_amt', 'priv_idx', 'pt_income', 'pt_idx',
-            'reduction_1_enabled', 'age_reduction_1_age', 'age_reduction_1_pct',
-            'reduction_2_enabled', 'age_reduction_2_age', 'age_reduction_2_pct',
-            'num_deposits', 'num_withdrawals'
-        ]
-        for key in widget_keys:
-            if key in st.session_state:
-                del st.session_state[key]
-        
-        if 'lump_sums' in st.session_state:
-            del st.session_state.lump_sums
-        if 'lump_sum_withdrawals' in st.session_state:
-            del st.session_state.lump_sum_withdrawals
-        
-        st.rerun()
-
 # Main content continues with input parameters
 st.title("🏖️ Retirement Planner")
 
