@@ -377,16 +377,14 @@ with st.sidebar:
         .sidebar .stCaption {
             font-size: 0.6rem;
         }
-        /* Hide file uploader drag-and-drop area and style button */
+        /* Style file uploader */
         .sidebar [data-testid="stFileUploader"] {
             font-size: 0.65rem;
         }
         .sidebar [data-testid="stFileUploader"] section {
-            padding: 0;
-            border: none;
-        }
-        .sidebar [data-testid="stFileUploader"] section > div {
-            display: none;
+            padding: 0.3rem;
+            border: 1px dashed rgba(49, 51, 63, 0.2);
+            border-radius: 0.25rem;
         }
         .sidebar [data-testid="stFileUploader"] button {
             padding: 0.15rem 0.3rem;
@@ -398,6 +396,11 @@ with st.sidebar:
         .sidebar [data-testid="stFileUploader"] button:hover {
             border-color: rgb(255, 75, 75);
             color: rgb(255, 75, 75);
+        }
+        /* Custom text for drag-drop area */
+        .sidebar [data-testid="stFileUploader"] section > div:first-child {
+            font-size: 0.6rem;
+            text-align: center;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -494,11 +497,10 @@ with st.sidebar:
     
     # Load button with file uploader (styled to look like button)
     uploaded = st.file_uploader(
-        "📂 Load",
+        "Drag & drop JSON files or click Browse",
         type=['json'],
         accept_multiple_files=True,
-        key="load_uploader",
-        label_visibility="collapsed"
+        key="load_uploader"
     )
     
     if uploaded:
