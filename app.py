@@ -391,8 +391,36 @@ with st.sidebar:
     if st.button("💾 Save", use_container_width=True, help="Save scenario"):
         st.session_state.show_new_dialog = True
     
-    if st.button("📂 Load", use_container_width=True, help="Load scenarios from file"):
-        st.session_state.show_import_dialog = True
+    # Load button with file uploader (no intermediate dialog)
+    uploaded = st.file_uploader(
+        "📂 Load",
+        type=['json'],
+        accept_multiple_files=True,
+        key="load_uploader",
+        help="Load scenarios from JSON files"
+    )
+    
+    if uploaded:
+        count = 0
+        for file in uploaded:
+            try:
+                data = json.load(file)
+                name = data.get('scenario_name', file.name.replace('.json', ''))
+                
+                # Set defaults
+                data.setdefault('reduction_1_enabled', True)
+                data.setdefault('reduction_2_enabled', True)
+                data.setdefault('lump_sums', [])
+                data.setdefault('lump_sum_withdrawals', [])
+                
+                st.session_state.saved_scenarios[name] = data
+                count += 1
+            except Exception as e:
+                st.error(f"Error: {file.name}")
+        
+        if count > 0:
+            st.success(f"✅ Loaded {count}")
+            st.rerun()
     
     if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
         st.session_state.show_clear_dialog = True
@@ -533,44 +561,7 @@ with st.sidebar:
                 st.session_state.show_new_dialog = False
                 st.rerun()
     
-    # Load Dialog - auto-load on file select
-    if st.session_state.get('show_import_dialog', False):
-        st.markdown("---")
-        uploaded = st.file_uploader(
-            "Select JSON:",
-            type=['json'],
-            accept_multiple_files=True,
-            key="uploader",
-            label_visibility="collapsed"
-        )
-        
-        if uploaded:
-            count = 0
-            for file in uploaded:
-                try:
-                    data = json.load(file)
-                    name = data.get('scenario_name', file.name.replace('.json', ''))
-                    
-                    # Set defaults
-                    data.setdefault('reduction_1_enabled', True)
-                    data.setdefault('reduction_2_enabled', True)
-                    data.setdefault('lump_sums', [])
-                    data.setdefault('lump_sum_withdrawals', [])
-                    
-                    st.session_state.saved_scenarios[name] = data
-                    count += 1
-                except Exception as e:
-                    st.error(f"Error: {file.name}")
-            
-            if count > 0:
-                st.success(f"✅ Loaded {count}")
-                st.session_state.show_import_dialog = False
-                st.rerun()
-        
-        if st.button("Close", use_container_width=True):
-            st.session_state.show_import_dialog = False
-            st.rerun()
-    
+
     # Clear All Dialog
     if st.session_state.get('show_clear_dialog', False):
         st.markdown("---")
