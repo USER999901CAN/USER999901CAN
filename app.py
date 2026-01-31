@@ -387,10 +387,23 @@ with st.sidebar:
     if 'active_scenario_name' not in st.session_state:
         st.session_state.active_scenario_name = None
     
-    # Active Scenario Selector
+    # Quick Actions - vertical buttons
+    if st.button("💾 Save", use_container_width=True, help="Save scenario"):
+        st.session_state.show_new_dialog = True
+    
+    if st.button("📂 Load", use_container_width=True, help="Load scenarios from file"):
+        st.session_state.show_import_dialog = True
+    
+    if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
+        st.session_state.show_clear_dialog = True
+    
+    # Loaded Scenarios Section
     scenario_list = list(st.session_state.saved_scenarios.keys())
     
     if scenario_list:
+        st.markdown("---")
+        st.subheader("Loaded Scenarios")
+        
         # Dropdown to switch between loaded scenarios
         current_index = scenario_list.index(st.session_state.active_scenario_name) if st.session_state.active_scenario_name in scenario_list else 0
         active_scenario = st.selectbox(
@@ -457,18 +470,6 @@ with st.sidebar:
             st.rerun()
         
         st.caption(f"{len(scenario_list)} loaded")
-    else:
-        st.caption("No scenarios")
-    
-    # Quick Actions - vertical buttons
-    if st.button("💾 Save", use_container_width=True, help="Save scenario"):
-        st.session_state.show_new_dialog = True
-    
-    if st.button("📥 Import", use_container_width=True, help="Import from file"):
-        st.session_state.show_import_dialog = True
-    
-    if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
-        st.session_state.show_clear_dialog = True
     
     # New Scenario Dialog - one-click save & download
     if st.session_state.get('show_new_dialog', False):
@@ -532,7 +533,7 @@ with st.sidebar:
                 st.session_state.show_new_dialog = False
                 st.rerun()
     
-    # Import Dialog - auto-load on file select
+    # Load Dialog - auto-load on file select
     if st.session_state.get('show_import_dialog', False):
         st.markdown("---")
         uploaded = st.file_uploader(
