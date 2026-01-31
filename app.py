@@ -604,11 +604,26 @@ with st.sidebar:
                 data = json.load(file)
                 name = data.get('scenario_name', file.name.replace('.json', ''))
                 
-                # Set defaults
+                # Set defaults for all fields that might be missing in old scenarios
                 data.setdefault('reduction_1_enabled', True)
                 data.setdefault('reduction_2_enabled', True)
                 data.setdefault('lump_sums', [])
                 data.setdefault('lump_sum_withdrawals', [])
+                data.setdefault('inflation_adjustment_enabled', True)
+                data.setdefault('ignore_oas_clawback', False)
+                data.setdefault('stop_investments_age', data.get('retirement_age', 65))
+                data.setdefault('part_time_start_age', data.get('retirement_age', 65))
+                data.setdefault('part_time_end_age', data.get('retirement_age', 65))
+                data.setdefault('part_time_inflation_adjusted', False)
+                # Bridged pension defaults
+                data.setdefault('bridged_enabled_p1', False)
+                data.setdefault('bridged_start_age_p1', 999)
+                data.setdefault('bridged_end_age_p1', 999)
+                data.setdefault('bridged_amount_p1', 0)
+                data.setdefault('bridged_enabled_p2', False)
+                data.setdefault('bridged_start_age_p2', 999)
+                data.setdefault('bridged_end_age_p2', 999)
+                data.setdefault('bridged_amount_p2', 0)
                 
                 st.session_state.saved_scenarios[name] = data
                 count += 1
