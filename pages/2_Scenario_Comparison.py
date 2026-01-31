@@ -73,41 +73,16 @@ if 'saved_scenarios' not in st.session_state or not st.session_state.saved_scena
     st.info("💡 **How to save scenarios:**\n1. Go to the Main page\n2. Enter your inputs and click Calculate\n3. Give your scenario a name in the sidebar\n4. Click 'Save Scenario'")
     st.stop()
 
-# Show calculation status
-if 'calculated_scenarios' in st.session_state and st.session_state.calculated_scenarios:
-    num_calculated = len(st.session_state.calculated_scenarios)
-    num_total = len(st.session_state.saved_scenarios)
-    st.success(f"⚡ {num_calculated} of {num_total} scenarios pre-calculated (instant comparison)")
-else:
-    st.info("💡 Tip: Use '⚡ Calculate All Scenarios' on the Main page for instant comparisons")
-
 # Scenario selection
 st.subheader("Select Scenarios to Compare")
 
-# Add indicators for pre-calculated scenarios
 available_scenarios = list(st.session_state.saved_scenarios.keys())
-calculated_set = set(st.session_state.get('calculated_scenarios', {}).keys())
 
-# Create display names with indicators
-scenario_display_names = []
-scenario_name_map = {}
-for name in available_scenarios:
-    if name in calculated_set:
-        display_name = f"⚡ {name}"
-    else:
-        display_name = f"   {name}"
-    scenario_display_names.append(display_name)
-    scenario_name_map[display_name] = name
-
-selected_display = st.multiselect(
-    "Choose up to 10 scenarios (⚡ = pre-calculated):",
-    scenario_display_names,
-    max_selections=10,
-    help="Pre-calculated scenarios (⚡) load instantly. Others will be calculated on demand."
+selected_scenarios = st.multiselect(
+    "Choose up to 10 scenarios:",
+    available_scenarios,
+    max_selections=10
 )
-
-# Convert display names back to actual names
-selected_scenarios = [scenario_name_map[display] for display in selected_display]
 
 if len(selected_scenarios) < 2:
     st.info("ℹ️ Please select at least 2 scenarios to compare.")
@@ -120,82 +95,73 @@ if st.button("🔄 Compare Scenarios", type="primary"):
         scenario_projections = {}  # Store full projections for line charts
         failed_scenarios = []
         
-        # Check if we have pre-calculated results
-        use_cached = 'calculated_scenarios' in st.session_state
-        
         for scenario_name in selected_scenarios:
             try:
-                # Try to use cached calculation first
-                if use_cached and scenario_name in st.session_state.calculated_scenarios:
-                    cached = st.session_state.calculated_scenarios[scenario_name]
-                    inputs = cached['inputs']
-                    results = cached['results']
-                    df = cached['projection_df']
-                else:
-                    # Load scenario from session state and calculate
-                    inputs = st.session_state.saved_scenarios.get(scenario_name)
-                    if not inputs:
-                        failed_scenarios.append(f"{scenario_name} (not found in session)")
-                        continue
+                # ALWAYS calculate fresh - don't use cached data to avoid stale data issues
+                # Load scenario from session state and calculate
+                inputs = st.session_state.saved_scenarios.get(scenario_name)
+                if not inputs:
+                    failed_scenarios.append(f"{scenario_name} (not found in session)")
+                    continue
+                
+                # Migrate old field names to new couple-mode field names
+                inputs = inputs.copy()  # Don't modify original
+                
+                # Check if this is an old scenario (has pension_start_age instead of oas_start_age)
+                if 'pension_start_age' in inputs and 'oas_start_age' not in inputs:
+                    # Migrate OAS fields
+                    inputs['oas_start_age'] = inputs.get('pension_start_age', 65)
+                    inputs['monthly_oas'] = inputs.get('monthly_pension', 0)
+                    inputs['oas_inflation_adjusted'] = inputs.get('pension_inflation_adjusted', True)
                     
-                    # Migrate old field names to new couple-mode field names
-                    inputs = inputs.copy()  # Don't modify original
+                    # Set Person 2 to defaults (old scenarios were single-person)
+                    inputs['oas_start_age_p2'] = 999
+                    inputs['monthly_oas_p2'] = 0
+                    inputs['oas_inflation_adjusted_p2'] = True
                     
-                    # Check if this is an old scenario (has pension_start_age instead of oas_start_age)
-                    if 'pension_start_age' in inputs and 'oas_start_age' not in inputs:
-                        # Migrate OAS fields
-                        inputs['oas_start_age'] = inputs.get('pension_start_age', 65)
-                        inputs['monthly_oas'] = inputs.get('monthly_pension', 0)
-                        inputs['oas_inflation_adjusted'] = inputs.get('pension_inflation_adjusted', True)
-                        
-                        # Set Person 2 to defaults (old scenarios were single-person)
-                        inputs['oas_start_age_p2'] = 999
-                        inputs['monthly_oas_p2'] = 0
-                        inputs['oas_inflation_adjusted_p2'] = True
-                        
-                        # Migrate CPP fields (old scenarios didn't have separate CPP)
-                        # Assume CPP was included in the pension amount, so set to 0
-                        inputs['cpp_start_age'] = 70
-                        inputs['monthly_cpp'] = 0
-                        inputs['cpp_inflation_adjusted'] = True
-                        inputs['cpp_start_age_p2'] = 999
-                        inputs['monthly_cpp_p2'] = 0
-                        inputs['cpp_inflation_adjusted_p2'] = True
-                        
-                        # Couple mode defaults
-                        inputs.setdefault('couple_mode', False)
+                    # Migrate CPP fields (old scenarios didn't have separate CPP)
+                    # Assume CPP was included in the pension amount, so set to 0
+                    inputs['cpp_start_age'] = 70
+                    inputs['monthly_cpp'] = 0
+                    inputs['cpp_inflation_adjusted'] = True
+                    inputs['cpp_start_age_p2'] = 999
+                    inputs['monthly_cpp_p2'] = 0
+                    inputs['cpp_inflation_adjusted_p2'] = True
                     
-                    # Ensure all required fields exist with defaults
-                    inputs.setdefault('oas_start_age', 65)
-                    inputs.setdefault('monthly_oas', 0)
-                    inputs.setdefault('oas_inflation_adjusted', True)
-                    inputs.setdefault('oas_start_age_p2', 999)
-                    inputs.setdefault('monthly_oas_p2', 0)
-                    inputs.setdefault('oas_inflation_adjusted_p2', True)
-                    inputs.setdefault('cpp_start_age', 70)
-                    inputs.setdefault('monthly_cpp', 0)
-                    inputs.setdefault('cpp_inflation_adjusted', True)
-                    inputs.setdefault('cpp_start_age_p2', 999)
-                    inputs.setdefault('monthly_cpp_p2', 0)
-                    inputs.setdefault('cpp_inflation_adjusted_p2', True)
+                    # Couple mode defaults
                     inputs.setdefault('couple_mode', False)
-                    
-                    # CRITICAL: Ensure current_age exists
-                    if 'current_age' not in inputs or inputs['current_age'] is None:
-                        # Try to calculate from birthdate
-                        if inputs.get('birthdate'):
-                            from datetime import datetime
-                            birthdate = datetime.strptime(inputs['birthdate'], '%Y-%m-%d')
-                            today = datetime.today()
-                            inputs['current_age'] = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
-                        else:
-                            # Use retirement_age - 5 as a reasonable default
-                            inputs['current_age'] = inputs.get('retirement_age', 65) - 5
-                    
-                    # Calculate results
-                    calculator = RetirementCalculator(inputs)
-                    results = calculator.calculate()
-                    df = pd.DataFrame(results['projection'])
+                
+                # Ensure all required fields exist with defaults
+                inputs.setdefault('oas_start_age', 65)
+                inputs.setdefault('monthly_oas', 0)
+                inputs.setdefault('oas_inflation_adjusted', True)
+                inputs.setdefault('oas_start_age_p2', 999)
+                inputs.setdefault('monthly_oas_p2', 0)
+                inputs.setdefault('oas_inflation_adjusted_p2', True)
+                inputs.setdefault('cpp_start_age', 70)
+                inputs.setdefault('monthly_cpp', 0)
+                inputs.setdefault('cpp_inflation_adjusted', True)
+                inputs.setdefault('cpp_start_age_p2', 999)
+                inputs.setdefault('monthly_cpp_p2', 0)
+                inputs.setdefault('cpp_inflation_adjusted_p2', True)
+                inputs.setdefault('couple_mode', False)
+                
+                # CRITICAL: Ensure current_age exists
+                if 'current_age' not in inputs or inputs['current_age'] is None:
+                    # Try to calculate from birthdate
+                    if inputs.get('birthdate'):
+                        from datetime import datetime
+                        birthdate = datetime.strptime(inputs['birthdate'], '%Y-%m-%d')
+                        today = datetime.today()
+                        inputs['current_age'] = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+                    else:
+                        # Use retirement_age - 5 as a reasonable default
+                        inputs['current_age'] = inputs.get('retirement_age', 65) - 5
+                
+                # Calculate results
+                calculator = RetirementCalculator(inputs)
+                results = calculator.calculate()
+                df = pd.DataFrame(results['projection'])
                 retirement_age = inputs['retirement_age']
                 current_age = inputs['current_age']
                 
