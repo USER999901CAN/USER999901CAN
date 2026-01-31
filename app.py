@@ -462,6 +462,15 @@ with st.sidebar:
             loaded_scenario.setdefault('inflation_adjustment_enabled', True)
             loaded_scenario.setdefault('pension_inflation_adjusted', True)
             loaded_scenario.setdefault('private_pension_inflation_adjusted', True)
+            # Set defaults for bridged pension fields (new feature)
+            loaded_scenario.setdefault('bridged_enabled_p1', False)
+            loaded_scenario.setdefault('bridged_start_age_p1', 999)
+            loaded_scenario.setdefault('bridged_end_age_p1', 999)
+            loaded_scenario.setdefault('bridged_amount_p1', 0)
+            loaded_scenario.setdefault('bridged_enabled_p2', False)
+            loaded_scenario.setdefault('bridged_start_age_p2', 999)
+            loaded_scenario.setdefault('bridged_end_age_p2', 999)
+            loaded_scenario.setdefault('bridged_amount_p2', 0)
             
             # Store loaded scenario
             st.session_state.loaded_scenario = loaded_scenario
