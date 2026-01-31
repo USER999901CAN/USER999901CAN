@@ -1256,11 +1256,17 @@ calculate_button = (calculate_button_tab1 or calculate_button_tab2 or calculate_
                    calculate_button_tab4 or calculate_button_tab5)
 
 if calculate_button:
-    calculator = RetirementCalculator(inputs)
-    results = calculator.calculate()
-    
-    st.session_state.results = results
-    st.session_state.inputs = inputs  # Save inputs too
+    try:
+        calculator = RetirementCalculator(inputs)
+        results = calculator.calculate()
+        
+        st.session_state.results = results
+        st.session_state.inputs = inputs  # Save inputs too
+    except Exception as e:
+        st.error(f"Error calculating retirement projection: {str(e)}")
+        st.error(f"Error type: {type(e).__name__}")
+        import traceback
+        st.code(traceback.format_exc())
 
 # Display results if they exist in session state
 if 'results' in st.session_state and st.session_state.results:
