@@ -422,8 +422,6 @@ with st.sidebar:
         </style>
     """, unsafe_allow_html=True)
     
-    st.header("Scenario Management")
-    
     # Initialize scenarios in session state
     if 'saved_scenarios' not in st.session_state:
         st.session_state.saved_scenarios = {}
@@ -578,19 +576,23 @@ with st.sidebar:
             # Rename button
             if st.button("🏷️ Rename", use_container_width=True, help="Rename this scenario"):
                 st.session_state.show_rename_dialog = True
+        
+        # Clear button
+        if st.button("🗑️ Clear All", use_container_width=True, help="Clear all scenarios"):
+            st.session_state.show_clear_dialog = True
     
     st.markdown("---")
     
-    # Quick Actions - vertical buttons
-    if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
-        st.session_state.show_clear_dialog = True
+    # Import/Export Section
+    st.subheader("Import/Export Scenarios")
     
-    if st.button("💾 Save", use_container_width=True, help="Save scenario"):
+    # Export button
+    if st.button("💾 Export", use_container_width=True, help="Export scenario to file"):
         st.session_state.show_new_dialog = True
     
-    # Load button with file uploader (styled to look like button)
+    # Import button with file uploader
     uploaded = st.file_uploader(
-        "Load Scenario",
+        "Import Scenario",
         type=['json'],
         accept_multiple_files=True,
         key="load_uploader"
@@ -767,7 +769,6 @@ with st.sidebar:
                 )
 
 # Main content continues with input parameters
-st.title("🏖️ Retirement Planner")
 
 # Get current scenario name for display
 scenario_name = st.session_state.get('active_scenario_name', 'Unsaved Scenario')
