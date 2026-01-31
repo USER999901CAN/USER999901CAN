@@ -473,13 +473,12 @@ with st.sidebar:
     # New Scenario Dialog - one-step process
     if st.session_state.get('show_new_dialog', False):
         st.markdown("---")
+        new_name = st.text_input("Name:", placeholder="My Scenario", key="new_name_input")
         
-        with st.form("new_scenario_form", clear_on_submit=True):
-            new_name = st.text_input("Name:", placeholder="My Scenario", key="new_name_form")
-            submitted = st.form_submit_button("Create & Save", use_container_width=True)
-            
-            if submitted and new_name:
-                if new_name not in st.session_state.saved_scenarios:
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Save", disabled=not new_name, use_container_width=True):
+                if new_name and new_name not in st.session_state.saved_scenarios:
                     from datetime import datetime
                     
                     # Use current inputs or defaults
@@ -505,37 +504,29 @@ with st.sidebar:
                     st.session_state.active_scenario_name = new_name
                     st.session_state.loaded_scenario = data
                     
-                    # Prepare download
+                    # Trigger download immediately
                     safe_name = new_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
-                    st.session_state.pending_download = {
-                        'data': json.dumps(data, indent=2),
-                        'filename': f"{safe_name}.json",
-                        'name': new_name
-                    }
+                    json_str = json.dumps(data, indent=2)
+                    
+                    # Use download button that auto-triggers
+                    st.download_button(
+                        "⬇️ Downloading...",
+                        data=json_str,
+                        file_name=f"{safe_name}.json",
+                        mime="application/json",
+                        use_container_width=True,
+                        key=f"auto_dl_{new_name}"
+                    )
                     
                     st.session_state.show_new_dialog = False
-                    st.rerun()
+                    st.success(f"✅ Saved: {new_name}")
                 else:
-                    st.error("Name already exists!")
+                    st.error("Name exists!")
         
-        if st.button("Cancel", use_container_width=True):
-            st.session_state.show_new_dialog = False
-            st.rerun()
-    
-    # Show pending download if exists
-    if 'pending_download' in st.session_state:
-        pd = st.session_state.pending_download
-        st.success(f"✅ Created: {pd['name']}")
-        st.download_button(
-            "💾 Download JSON",
-            data=pd['data'],
-            file_name=pd['filename'],
-            mime="application/json",
-            use_container_width=True
-        )
-        if st.button("Done", use_container_width=True):
-            del st.session_state.pending_download
-            st.rerun()
+        with col2:
+            if st.button("Cancel", use_container_width=True):
+                st.session_state.show_new_dialog = False
+                st.rerun()
     
     # Import Dialog - auto-load on file select
     if st.session_state.get('show_import_dialog', False):
