@@ -566,18 +566,18 @@ with st.sidebar:
         col1, col2 = st.columns(2)
         with col1:
             # Update button - saves current inputs back to the loaded scenario
-            if st.button("✏️ Update", use_container_width=True, help="Save current inputs to this scenario"):
+            if st.button("✏️ Update", use_container_width=True, help="Save current inputs to this scenario", key="update_scenario_btn"):
                 if st.session_state.active_scenario_name:
                     # Mark that we want to update on next run (after inputs are collected)
                     st.session_state.update_scenario_on_next_run = True
                     st.info("Click Calculate to save changes to scenario")
         with col2:
             # Rename button
-            if st.button("🏷️ Rename", use_container_width=True, help="Rename this scenario"):
+            if st.button("🏷️ Rename", use_container_width=True, help="Rename this scenario", key="rename_scenario_btn"):
                 st.session_state.show_rename_dialog = True
         
         # Clear button
-        if st.button("🗑️ Clear All", use_container_width=True, help="Clear all scenarios"):
+        if st.button("🗑️ Clear All", use_container_width=True, help="Clear all scenarios", key="clear_all_btn"):
             st.session_state.show_clear_dialog = True
     
     st.markdown("---")
@@ -703,7 +703,7 @@ with st.sidebar:
         st.warning("Clear all scenarios?")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Yes", use_container_width=True):
+            if st.button("Yes", use_container_width=True, key="clear_yes_btn"):
                 st.session_state.saved_scenarios = {}
                 st.session_state.active_scenario_name = None
                 st.session_state.loaded_scenario = None
@@ -718,7 +718,7 @@ with st.sidebar:
                 st.session_state.show_clear_dialog = False
                 st.rerun()
         with col2:
-            if st.button("No", use_container_width=True):
+            if st.button("No", use_container_width=True, key="clear_no_btn"):
                 st.session_state.show_clear_dialog = False
                 st.rerun()
     
@@ -735,7 +735,7 @@ with st.sidebar:
             else:
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("Rename", use_container_width=True):
+                    if st.button("Rename", use_container_width=True, key="rename_confirm_btn"):
                         # Copy scenario with new name
                         st.session_state.saved_scenarios[new_name] = st.session_state.saved_scenarios[old_name]
                         # Delete old name
@@ -745,11 +745,11 @@ with st.sidebar:
                         st.session_state.show_rename_dialog = False
                         st.rerun()
                 with col2:
-                    if st.button("Cancel", use_container_width=True):
+                    if st.button("Cancel", use_container_width=True, key="rename_cancel_btn"):
                         st.session_state.show_rename_dialog = False
                         st.rerun()
         else:
-            if st.button("Cancel", use_container_width=True):
+            if st.button("Cancel", use_container_width=True, key="rename_cancel_btn2"):
                 st.session_state.show_rename_dialog = False
                 st.rerun()
     
