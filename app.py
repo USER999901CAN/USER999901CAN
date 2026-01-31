@@ -16,6 +16,110 @@ from charts import (
     create_dashboard_summary
 )
 
+# Current schema version
+CURRENT_SCHEMA_VERSION = 2
+
+def migrate_scenario_data(data):
+    """
+    Migrate old scenario data to current schema version.
+    Ensures all required fields exist with sensible defaults.
+    """
+    # Get schema version (default to 1 for old scenarios)
+    schema_version = data.get('schema_version', 1)
+    
+    # If already current version, just ensure all fields exist
+    if schema_version >= CURRENT_SCHEMA_VERSION:
+        pass  # Still apply defaults below for safety
+    
+    # Apply comprehensive defaults for all fields
+    # Basic fields
+    data.setdefault('schema_version', CURRENT_SCHEMA_VERSION)
+    data.setdefault('current_age', 30)
+    data.setdefault('birthdate', None)
+    data.setdefault('retirement_age', 65)
+    data.setdefault('couple_mode', False)
+    
+    # Investment fields
+    data.setdefault('tfsa', 0)
+    data.setdefault('rrsp', 0)
+    data.setdefault('non_registered', 0)
+    data.setdefault('lira', 0)
+    data.setdefault('total_investments', 0)
+    data.setdefault('monthly_investments', 0)
+    data.setdefault('investment_return', 6.0)
+    data.setdefault('yearly_inflation', 2.1)
+    data.setdefault('stop_investments_age', data.get('retirement_age', 65))
+    
+    # Retirement income
+    data.setdefault('retirement_year_one_income', 0)
+    data.setdefault('inflation_adjustment_enabled', True)
+    
+    # Age-based reductions
+    data.setdefault('reduction_1_enabled', True)
+    data.setdefault('age_77_threshold', 77)
+    data.setdefault('age_77_reduction', 10)
+    data.setdefault('reduction_2_enabled', True)
+    data.setdefault('age_83_threshold', 83)
+    data.setdefault('age_83_reduction', 10)
+    
+    # OAS fields (Person 1)
+    data.setdefault('oas_start_age', 65)
+    data.setdefault('monthly_oas', 0)
+    data.setdefault('oas_inflation_adjusted', True)
+    
+    # OAS fields (Person 2)
+    data.setdefault('oas_start_age_p2', 65)
+    data.setdefault('monthly_oas_p2', 0)
+    data.setdefault('oas_inflation_adjusted_p2', True)
+    
+    # CPP fields (Person 1)
+    data.setdefault('cpp_start_age', 70)
+    data.setdefault('monthly_cpp', 0)
+    data.setdefault('cpp_inflation_adjusted', True)
+    
+    # CPP fields (Person 2)
+    data.setdefault('cpp_start_age_p2', 70)
+    data.setdefault('monthly_cpp_p2', 0)
+    data.setdefault('cpp_inflation_adjusted_p2', True)
+    
+    # Private pension fields (Person 1)
+    data.setdefault('private_pension_start_age', 500)
+    data.setdefault('monthly_private_pension', 0)
+    data.setdefault('private_pension_inflation_adjusted', True)
+    
+    # Private pension fields (Person 2)
+    data.setdefault('private_pension_start_age_p2', 500)
+    data.setdefault('monthly_private_pension_p2', 0)
+    data.setdefault('private_pension_inflation_adjusted_p2', True)
+    
+    # Bridged pension fields (Person 1) - Added in schema v2
+    data.setdefault('bridged_enabled_p1', False)
+    data.setdefault('bridged_start_age_p1', 999)
+    data.setdefault('bridged_end_age_p1', 999)
+    data.setdefault('bridged_amount_p1', 0)
+    
+    # Bridged pension fields (Person 2) - Added in schema v2
+    data.setdefault('bridged_enabled_p2', False)
+    data.setdefault('bridged_start_age_p2', 999)
+    data.setdefault('bridged_end_age_p2', 999)
+    data.setdefault('bridged_amount_p2', 0)
+    
+    # Part-time work fields
+    data.setdefault('part_time_income', 0)
+    data.setdefault('part_time_start_age', data.get('retirement_age', 65))
+    data.setdefault('part_time_end_age', data.get('retirement_age', 65))
+    data.setdefault('part_time_inflation_adjusted', False)
+    
+    # Other fields
+    data.setdefault('ignore_oas_clawback', False)
+    data.setdefault('lump_sums', [])
+    data.setdefault('lump_sum_withdrawals', [])
+    
+    # Update schema version to current
+    data['schema_version'] = CURRENT_SCHEMA_VERSION
+    
+    return data
+
 # Page config
 st.set_page_config(
     page_title="Main",
@@ -448,27 +552,8 @@ with st.sidebar:
         if active_scenario != st.session_state.active_scenario_name:
             loaded_scenario = st.session_state.saved_scenarios[active_scenario]
             
-            # Set defaults for any missing fields
-            loaded_scenario.setdefault('reduction_1_enabled', True)
-            loaded_scenario.setdefault('reduction_2_enabled', True)
-            loaded_scenario.setdefault('age_77_threshold', 77)
-            loaded_scenario.setdefault('age_83_threshold', 83)
-            loaded_scenario.setdefault('age_77_reduction', 10)
-            loaded_scenario.setdefault('age_83_reduction', 10)
-            loaded_scenario.setdefault('lump_sums', [])
-            loaded_scenario.setdefault('lump_sum_withdrawals', [])
-            loaded_scenario.setdefault('inflation_adjustment_enabled', True)
-            loaded_scenario.setdefault('pension_inflation_adjusted', True)
-            loaded_scenario.setdefault('private_pension_inflation_adjusted', True)
-            # Set defaults for bridged pension fields (new feature)
-            loaded_scenario.setdefault('bridged_enabled_p1', False)
-            loaded_scenario.setdefault('bridged_start_age_p1', 999)
-            loaded_scenario.setdefault('bridged_end_age_p1', 999)
-            loaded_scenario.setdefault('bridged_amount_p1', 0)
-            loaded_scenario.setdefault('bridged_enabled_p2', False)
-            loaded_scenario.setdefault('bridged_start_age_p2', 999)
-            loaded_scenario.setdefault('bridged_end_age_p2', 999)
-            loaded_scenario.setdefault('bridged_amount_p2', 0)
+            # Migrate data to current schema version
+            loaded_scenario = migrate_scenario_data(loaded_scenario)
             
             # Store loaded scenario
             st.session_state.loaded_scenario = loaded_scenario
@@ -610,31 +695,13 @@ with st.sidebar:
                 data = json.load(file)
                 name = data.get('scenario_name', file.name.replace('.json', ''))
                 
-                # Set defaults for all fields that might be missing in old scenarios
-                data.setdefault('reduction_1_enabled', True)
-                data.setdefault('reduction_2_enabled', True)
-                data.setdefault('lump_sums', [])
-                data.setdefault('lump_sum_withdrawals', [])
-                data.setdefault('inflation_adjustment_enabled', True)
-                data.setdefault('ignore_oas_clawback', False)
-                data.setdefault('stop_investments_age', data.get('retirement_age', 65))
-                data.setdefault('part_time_start_age', data.get('retirement_age', 65))
-                data.setdefault('part_time_end_age', data.get('retirement_age', 65))
-                data.setdefault('part_time_inflation_adjusted', False)
-                # Bridged pension defaults
-                data.setdefault('bridged_enabled_p1', False)
-                data.setdefault('bridged_start_age_p1', 999)
-                data.setdefault('bridged_end_age_p1', 999)
-                data.setdefault('bridged_amount_p1', 0)
-                data.setdefault('bridged_enabled_p2', False)
-                data.setdefault('bridged_start_age_p2', 999)
-                data.setdefault('bridged_end_age_p2', 999)
-                data.setdefault('bridged_amount_p2', 0)
+                # Migrate data to current schema version
+                data = migrate_scenario_data(data)
                 
                 st.session_state.saved_scenarios[name] = data
                 count += 1
             except Exception as e:
-                st.error(f"Error: {file.name}")
+                st.error(f"Error: {file.name} - {str(e)}")
         
         if count > 0:
             st.success(f"✅ Loaded {count}")
@@ -665,6 +732,7 @@ with st.sidebar:
             
             data['scenario_name'] = new_name
             data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data['schema_version'] = CURRENT_SCHEMA_VERSION  # Add schema version
             
             # Prepare download
             safe_name = new_name.replace(' ', '_').replace('/', '-').replace('\\', '-')
@@ -1423,6 +1491,7 @@ if calculate_button:
                         updated_data = inputs.copy()
                         updated_data['scenario_name'] = st.session_state.active_scenario_name
                         updated_data['last_saved'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        updated_data['schema_version'] = CURRENT_SCHEMA_VERSION  # Add schema version
                         st.session_state.saved_scenarios[st.session_state.active_scenario_name] = updated_data
                         
                         # Clear cached calculation for this scenario since it's been updated
