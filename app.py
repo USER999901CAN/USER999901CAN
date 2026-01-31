@@ -1624,6 +1624,11 @@ if 'results' in st.session_state and st.session_state.results:
             financial_health_score = 0
             health_rating = "❌ Fail"
     
+    # Run Monte Carlo simulation for success rate
+    mc_simulator = MonteCarloSimulator(inputs, num_simulations=10000)
+    mc_results = mc_simulator.run_simulation()
+    mc_success_rate = mc_results['success_rate']
+    
     col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
     with col1:
         st.metric("Financial Health", f"{financial_health_score}/100")
@@ -1636,7 +1641,7 @@ if 'results' in st.session_state and st.session_state.results:
     with col5:
         st.metric("Balance at 95", f"${balance_at_95:,.0f}")
     with col6:
-        st.metric("Balance at 100", f"${results['final_balance']:,.0f}")
+        st.metric("Monte Carlo", f"{mc_success_rate:.1f}%")
     with col7:
         st.metric("Shortfall?", "Yes" if has_shortfall else "No")
     with col8:
