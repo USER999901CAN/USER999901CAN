@@ -460,20 +460,15 @@ with st.sidebar:
     else:
         st.caption("No scenarios")
     
-    # Quick Actions - compact buttons
-    col1, col2, col3 = st.columns(3)
+    # Quick Actions - vertical buttons
+    if st.button("➕ New", use_container_width=True, help="New scenario"):
+        st.session_state.show_new_dialog = True
     
-    with col1:
-        if st.button("➕", use_container_width=True, help="New scenario"):
-            st.session_state.show_new_dialog = True
+    if st.button("📥 Import", use_container_width=True, help="Import from file"):
+        st.session_state.show_import_dialog = True
     
-    with col2:
-        if st.button("📥", use_container_width=True, help="Import from file"):
-            st.session_state.show_import_dialog = True
-    
-    with col3:
-        if st.button("🗑️", use_container_width=True, help="Clear all"):
-            st.session_state.show_clear_dialog = True
+    if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
+        st.session_state.show_clear_dialog = True
     
     # New Scenario Dialog - streamlined
     if st.session_state.get('show_new_dialog', False):
