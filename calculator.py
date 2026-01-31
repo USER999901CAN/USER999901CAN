@@ -194,6 +194,18 @@ class RetirementCalculator:
                         years_from_now = age - current_age
                         employer_pension_p1 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
                 
+                # Add bridged amount for Person 1 if applicable
+                if self.inputs.get('bridged_enabled_p1', False):
+                    bridged_start = self.inputs.get('bridged_start_age_p1', 999)
+                    bridged_end = self.inputs.get('bridged_end_age_p1', 999)
+                    if bridged_start <= age <= bridged_end:
+                        bridged_amount = self.inputs.get('bridged_amount_p1', 0)
+                        if self.inputs.get('private_pension_inflation_adjusted', False):
+                            # Inflate bridged amount same as main pension
+                            years_from_now = age - current_age
+                            bridged_amount *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                        employer_pension_p1 += bridged_amount
+                
                 # Employer/Private pension - Person 2
                 employer_pension_p2 = 0
                 if age >= self.inputs.get('private_pension_start_age_p2', 999):
@@ -202,6 +214,18 @@ class RetirementCalculator:
                         # Inflate from current age to this age
                         years_from_now = age - current_age
                         employer_pension_p2 *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                
+                # Add bridged amount for Person 2 if applicable
+                if self.inputs.get('bridged_enabled_p2', False):
+                    bridged_start = self.inputs.get('bridged_start_age_p2', 999)
+                    bridged_end = self.inputs.get('bridged_end_age_p2', 999)
+                    if bridged_start <= age <= bridged_end:
+                        bridged_amount = self.inputs.get('bridged_amount_p2', 0)
+                        if self.inputs.get('private_pension_inflation_adjusted_p2', False):
+                            # Inflate bridged amount same as main pension
+                            years_from_now = age - current_age
+                            bridged_amount *= ((1 + self.inputs['yearly_inflation'] / 100) ** years_from_now)
+                        employer_pension_p2 += bridged_amount
                 
                 # Total Employer Pension
                 employer_pension = employer_pension_p1 + employer_pension_p2
