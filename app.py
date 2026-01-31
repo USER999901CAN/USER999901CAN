@@ -31,6 +31,13 @@ def migrate_scenario_data(data):
     if schema_version >= CURRENT_SCHEMA_VERSION:
         pass  # Still apply defaults below for safety
     
+    # Fix common data type issues from old JSONs
+    # lump_sums and lump_sum_withdrawals must be arrays, not numbers
+    if not isinstance(data.get('lump_sums'), list):
+        data['lump_sums'] = []
+    if not isinstance(data.get('lump_sum_withdrawals'), list):
+        data['lump_sum_withdrawals'] = []
+    
     # Apply comprehensive defaults for all fields
     # Basic fields
     data.setdefault('schema_version', CURRENT_SCHEMA_VERSION)
@@ -1472,10 +1479,27 @@ calculate_button = (calculate_button_tab1 or calculate_button_tab2 or calculate_
 if calculate_button:
     with st.spinner('Calculating retirement projection...'):
         try:
+            # Debug: Log inputs for troubleshooting
+            if st.session_state.get('active_scenario_name'):
+                st.info(f"Calculating scenario: {st.session_state.active_scenario_name}")
+            
             # Validate inputs before calculation
             if inputs.get('retirement_age', 0) <= inputs.get('current_age', 0):
                 st.error("Retirement age must be greater than current age")
             else:
+                # Debug: Check for problematic values
+                problematic_fields = []
+                for key, value in inputs.items():
+                    if isinstance(value, (int, float)) and (value < 0 or value > 999):
+                        if key not in ['private_pension_start_age', 'private_pension_start_age_p2', 
+                                      'bridged_start_age_p1', 'bridged_start_age_p2',
+                                      'bridged_end_age_p1', 'bridged_end_age_p2',
+                                      'oas_start_age_p2', 'cpp_start_age_p2']:
+                            problematic_fields.append(f"{key}={value}")
+                
+                if problematic_fields:
+                    st.warning(f"Unusual values detected: {', '.join(problematic_fields[:5])}")
+                
                 calculator = RetirementCalculator(inputs)
                 results = calculator.calculate()
                 
@@ -1520,6 +1544,10 @@ if calculate_button:
             st.error(f"Error type: {type(e).__name__}")
             import traceback
             st.code(traceback.format_exc())
+            
+            # Show problematic inputs
+            st.error("Inputs that may be causing the issue:")
+            st.json({k: v for k, v in inputs.items() if isinstance(v, (int, float, str, bool))})
 
 # Display results if they exist in session state
 if 'results' in st.session_state and st.session_state.results:
