@@ -530,12 +530,12 @@ with st.sidebar:
             
             # Part-time work fields
             st.session_state['pt_income'] = loaded_scenario.get('part_time_income', 0)
-            st.session_state['pt_start_age'] = loaded_scenario.get('part_time_start_age', retirement_age)
-            st.session_state['pt_end_age'] = loaded_scenario.get('part_time_end_age', retirement_age)
+            st.session_state['pt_start_age'] = loaded_scenario.get('part_time_start_age', loaded_scenario.get('retirement_age', 65))
+            st.session_state['pt_end_age'] = loaded_scenario.get('part_time_end_age', loaded_scenario.get('retirement_age', 65))
             st.session_state['pt_idx'] = loaded_scenario.get('part_time_inflation_adjusted', False)
             
             # Other fields
-            st.session_state['stop_inv_age'] = loaded_scenario.get('stop_investments_age', retirement_age)
+            st.session_state['stop_inv_age'] = loaded_scenario.get('stop_investments_age', loaded_scenario.get('retirement_age', 65))
             st.session_state['inflation_adj'] = loaded_scenario.get('inflation_adjustment_enabled', True)
             st.session_state['ignore_clawback'] = loaded_scenario.get('ignore_oas_clawback', False)
             
