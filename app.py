@@ -363,23 +363,34 @@ with st.sidebar:
     st.markdown("""
         <style>
         .sidebar .element-container {
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
         }
         .sidebar h3 {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            margin-bottom: 0.3rem;
+            margin-top: 0.3rem;
         }
         .sidebar .stButton button {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.85rem;
+            padding: 0.15rem 0.3rem;
+            font-size: 0.65rem;
         }
         .sidebar .stCaption {
-            font-size: 0.75rem;
+            font-size: 0.6rem;
+        }
+        .sidebar [data-testid="stFileUploader"] {
+            font-size: 0.65rem;
+        }
+        .sidebar [data-testid="stFileUploader"] label {
+            font-size: 0.65rem;
+        }
+        .sidebar [data-testid="stFileUploader"] button {
+            padding: 0.15rem 0.3rem;
+            font-size: 0.65rem;
         }
         </style>
     """, unsafe_allow_html=True)
     
-    st.header("💾 Scenarios")
+    st.header("Scenario Management")
     
     # Initialize scenarios in session state
     if 'saved_scenarios' not in st.session_state:
@@ -387,49 +398,10 @@ with st.sidebar:
     if 'active_scenario_name' not in st.session_state:
         st.session_state.active_scenario_name = None
     
-    # Quick Actions - vertical buttons
-    if st.button("💾 Save", use_container_width=True, help="Save scenario"):
-        st.session_state.show_new_dialog = True
-    
-    # Load button with file uploader (no intermediate dialog)
-    uploaded = st.file_uploader(
-        "📂 Load",
-        type=['json'],
-        accept_multiple_files=True,
-        key="load_uploader",
-        help="Load scenarios from JSON files"
-    )
-    
-    if uploaded:
-        count = 0
-        for file in uploaded:
-            try:
-                data = json.load(file)
-                name = data.get('scenario_name', file.name.replace('.json', ''))
-                
-                # Set defaults
-                data.setdefault('reduction_1_enabled', True)
-                data.setdefault('reduction_2_enabled', True)
-                data.setdefault('lump_sums', [])
-                data.setdefault('lump_sum_withdrawals', [])
-                
-                st.session_state.saved_scenarios[name] = data
-                count += 1
-            except Exception as e:
-                st.error(f"Error: {file.name}")
-        
-        if count > 0:
-            st.success(f"✅ Loaded {count}")
-            st.rerun()
-    
-    if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
-        st.session_state.show_clear_dialog = True
-    
-    # Loaded Scenarios Section
+    # Loaded Scenarios Section - moved to top
     scenario_list = list(st.session_state.saved_scenarios.keys())
     
     if scenario_list:
-        st.markdown("---")
         st.subheader("Loaded Scenarios")
         
         # Dropdown to switch between loaded scenarios
@@ -498,6 +470,46 @@ with st.sidebar:
             st.rerun()
         
         st.caption(f"{len(scenario_list)} loaded")
+    
+    st.markdown("---")
+    
+    # Quick Actions - vertical buttons
+    if st.button("💾 Save", use_container_width=True, help="Save scenario"):
+        st.session_state.show_new_dialog = True
+    
+    # Load button with file uploader (no intermediate dialog)
+    uploaded = st.file_uploader(
+        "📂 Load",
+        type=['json'],
+        accept_multiple_files=True,
+        key="load_uploader",
+        help="Load scenarios from JSON files"
+    )
+    
+    if uploaded:
+        count = 0
+        for file in uploaded:
+            try:
+                data = json.load(file)
+                name = data.get('scenario_name', file.name.replace('.json', ''))
+                
+                # Set defaults
+                data.setdefault('reduction_1_enabled', True)
+                data.setdefault('reduction_2_enabled', True)
+                data.setdefault('lump_sums', [])
+                data.setdefault('lump_sum_withdrawals', [])
+                
+                st.session_state.saved_scenarios[name] = data
+                count += 1
+            except Exception as e:
+                st.error(f"Error: {file.name}")
+        
+        if count > 0:
+            st.success(f"✅ Loaded {count}")
+            st.rerun()
+    
+    if st.button("🗑️ Clear", use_container_width=True, help="Clear all"):
+        st.session_state.show_clear_dialog = True
     
     # New Scenario Dialog - one-click save & download
     if st.session_state.get('show_new_dialog', False):
