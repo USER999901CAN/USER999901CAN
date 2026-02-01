@@ -54,7 +54,7 @@ def migrate_scenario_data(data):
     data.setdefault('total_investments', 0)
     data.setdefault('monthly_investments', 0)
     data.setdefault('investment_return', 6.0)
-    data.setdefault('yearly_inflation', 2.1)
+    data.setdefault('yearly_inflation', 2.5)
     data.setdefault('stop_investments_age', data.get('retirement_age', 65))
     
     # Retirement income
@@ -71,12 +71,12 @@ def migrate_scenario_data(data):
     
     # OAS fields (Person 1)
     data.setdefault('oas_start_age', 65)
-    data.setdefault('monthly_oas', 0)
+    data.setdefault('monthly_oas', 742)
     data.setdefault('oas_inflation_adjusted', True)
     
     # OAS fields (Person 2)
     data.setdefault('oas_start_age_p2', 65)
-    data.setdefault('monthly_oas_p2', 0)
+    data.setdefault('monthly_oas_p2', 742)
     data.setdefault('oas_inflation_adjusted_p2', True)
     
     # CPP fields (Person 1)
@@ -90,12 +90,12 @@ def migrate_scenario_data(data):
     data.setdefault('cpp_inflation_adjusted_p2', True)
     
     # Private pension fields (Person 1)
-    data.setdefault('private_pension_start_age', 500)
+    data.setdefault('private_pension_start_age', 0)
     data.setdefault('monthly_private_pension', 0)
     data.setdefault('private_pension_inflation_adjusted', True)
     
     # Private pension fields (Person 2)
-    data.setdefault('private_pension_start_age_p2', 500)
+    data.setdefault('private_pension_start_age_p2', 0)
     data.setdefault('monthly_private_pension_p2', 0)
     data.setdefault('private_pension_inflation_adjusted_p2', True)
     
@@ -157,11 +157,13 @@ st.markdown("""
             font-size: 10px;
         }
         h1 {
-            margin-top: 0.1rem;
+            margin-top: 0.05rem;
             margin-bottom: 0.2rem;
-            padding-top: 0.1rem;
+            padding-top: 0.05rem;
             font-size: 1.4rem;
-            line-height: 1.1;
+            line-height: 1.2;
+            white-space: normal;
+            word-wrap: break-word;
         }
         h2 {
             margin-top: 0.2rem;
@@ -195,6 +197,14 @@ st.markdown("""
         label {
             font-size: 0.75rem;
             margin-bottom: 0.05rem;
+        }
+        
+        /* Section headings - same as labels but one size larger and bold */
+        .section-heading {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+            margin-top: 0.3rem;
         }
         .stButton button {
             padding: 0.2rem 0.6rem;
@@ -239,10 +249,21 @@ st.markdown("""
         }
         .stCheckbox label {
             font-weight: normal !important;
-            font-size: 0.75rem;
+            font-size: 0.75rem !important;
         }
         .stCheckbox label p {
             font-weight: normal !important;
+            font-size: 0.75rem !important;
+        }
+        
+        /* Investment totals box styling */
+        .investment-totals-box {
+            background-color: #f0f0f0;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.3rem;
+            margin-bottom: 0.3rem;
         }
         
         /* Compact tabs */
@@ -967,7 +988,7 @@ def calculate_age(birthdate):
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["1. 👤 Personal & Basic", "2. 💰 Investments", "3. 🏛️ Pensions", "4. 💼 Extra Income & Lump Sums", "5. 📉 Spending Adjustments"])
 
 with tab1:
-    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Personal Information</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-heading">Personal Information</p>', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -1003,11 +1024,11 @@ with tab1:
     with col2:
         inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), key="inflation_adj", help="Increase required income each year with inflation")
     
-    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0.3rem;">Financial Assumptions</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-heading">Financial Assumptions</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
     with col1:
-        yearly_inflation = st.number_input("Annual Inflation Rate (%)", 0.0, 10.0, get_default('yearly_inflation', 2.1), step=0.1)
+        yearly_inflation = st.number_input("Annual Inflation Rate (%)", 0.0, 10.0, get_default('yearly_inflation', 2.5), step=0.1)
     
     with col2:
         investment_return = st.number_input("Expected Investment Return (%)", 0.0, 20.0, get_default('investment_return', 6.0), step=0.1)
@@ -1019,7 +1040,7 @@ with tab1:
         calculate_button_tab1 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab1")
 
 with tab2:
-    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Current Investment Balances</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-heading">Current Investment Balances</p>', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -1035,9 +1056,16 @@ with tab2:
         lira = st.number_input("LIRA Balance ($)", 0, 10000000, get_default('lira', 0), step=1000)
     
     total_investments = tfsa + rrsp + non_registered + lira
+    
+    # Investment Totals box with light gray background
+    st.markdown("""
+        <div class="investment-totals-box">
+            <p class="section-heading" style="margin-top: 0;">Investment Totals</p>
+        </div>
+    """, unsafe_allow_html=True)
     st.metric("Total Current Investments", f"${total_investments:,.0f}")
     
-    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0.3rem;">Ongoing Contributions</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-heading">Ongoing Contributions</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
     with col1:
@@ -1067,7 +1095,7 @@ with tab2:
 
 with tab3:
     # Planning mode - Single or Couple
-    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Planning Mode</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-heading">Planning Mode</p>', unsafe_allow_html=True)
     col1, col2 = st.columns([1, 3])
     with col1:
         planning_mode = st.radio("", ["Single", "Couple"], 
@@ -1078,7 +1106,7 @@ with tab3:
     
     # OAS and CPP in one box
     with st.container(border=True):
-        st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Old Age Security (OAS)</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-heading" style="margin-top: 0;">Old Age Security (OAS)</p>', unsafe_allow_html=True)
         
         if couple_mode:
             # Person 1 OAS
@@ -1139,7 +1167,7 @@ with tab3:
             monthly_oas_p2 = 0
             oas_inflation_adjusted_p2 = True
         
-        st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0.3rem;">Canada Pension Plan (CPP)</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-heading">Canada Pension Plan (CPP)</p>', unsafe_allow_html=True)
         
         if couple_mode:
             # Person 1 CPP
@@ -1200,140 +1228,140 @@ with tab3:
             monthly_cpp_p2 = 0
             cpp_inflation_adjusted_p2 = True
     
-    # Employer pension in separate box
+    # Employer pension in separate box - includes all fields
     with st.container(border=True):
-        st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Employer/Private Pension</p>', unsafe_allow_html=True)
-    
-    if couple_mode:
-        # Person 1 Employer Pension
-        st.markdown("#### Person 1")
+        st.markdown('<p class="section-heading" style="margin-top: 0;">Employer/Private Pension</p>', unsafe_allow_html=True)
         
-        col1, col2, col3, col4 = st.columns(4)
+        if couple_mode:
+            # Person 1 Employer Pension
+            st.markdown('<p style="font-size: 0.7rem; font-weight: 600; margin-bottom: 0.1rem;">Person 1</p>', unsafe_allow_html=True)
         
-        with col1:
-            private_pension_start_age = st.number_input("Start Age", 0, 100, key="priv_start_p1", 
-                                                       value=get_default('private_pension_start_age', 0),
-                                                       help="Age when employer pension starts (0 = no pension)")
-        
-        with col2:
-            monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt_p1", 
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                private_pension_start_age = st.number_input("Start Age", 0, 100, key="priv_start_p1", 
+                                                           value=get_default('private_pension_start_age', 0),
+                                                           help="Age when employer pension starts (0 = no pension)")
+            
+            with col2:
+                monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt_p1", 
+                                                         value=get_default('monthly_private_pension', 0),
+                                                         help="Monthly pension amount in today's dollars")
+            
+            with col3:
+                private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx_p1", 
+                                                                value=get_default('private_pension_inflation_adjusted', True))
+            
+            with col4:
+                bridged_enabled_p1 = st.checkbox("Add Bridge", key="bridged_p1", 
+                                                value=get_default('bridged_enabled_p1', False),
+                                                help="Enable if pension has a bridged amount until CPP/OAS starts")
+            
+            # Bridged amount fields on same row for Person 1
+            if bridged_enabled_p1:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    # Bridge start age defaults to 0 (disabled)
+                    default_bridge_start = get_default('bridged_start_age_p1', 0)
+                    if default_bridge_start > 100:
+                        default_bridge_start = 0
+                    bridged_start_age_p1 = st.number_input("Bridge Start Age", 0, 100, key="bridged_start_p1",
+                                                           value=default_bridge_start,
+                                                           help="Age when bridged amount starts (0 = no bridge)")
+                with col2:
+                    # Bridge end age defaults to 0 (disabled)
+                    default_end_age = get_default('bridged_end_age_p1', 0)
+                    if default_end_age > 100:
+                        default_end_age = 0
+                    # Ensure end age is at least start age
+                    if bridged_start_age_p1 > 0:
+                        default_end_age = max(bridged_start_age_p1, default_end_age)
+                    bridged_end_age_p1 = st.number_input("Bridge End Age", bridged_start_age_p1, 100, key="bridged_end_p1",
+                                                         value=default_end_age,
+                                                         help="Age when bridged amount ends (typically when CPP/OAS starts)")
+                with col3:
+                    bridged_amount_p1 = st.number_input("Bridge Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p1",
+                                                        value=get_default('bridged_amount_p1', 0),
+                                                        help="Additional monthly amount during bridge period")
+            else:
+                bridged_start_age_p1 = 999
+                bridged_end_age_p1 = 999
+                bridged_amount_p1 = 0
+            
+            # Person 2 Employer Pension
+            st.markdown('<p style="font-size: 0.7rem; font-weight: 600; margin-bottom: 0.1rem; margin-top: 0.2rem;">Person 2</p>', unsafe_allow_html=True)
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                private_pension_start_age_p2 = st.number_input("Start Age", 0, 100, key="priv_start_p2", 
+                                                                  value=get_default('private_pension_start_age_p2', 0),
+                                                                  help="Age when employer pension starts (0 = no pension)")
+            
+            with col2:
+                monthly_private_pension_p2 = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt_p2", 
+                                                            value=get_default('monthly_private_pension_p2', 0),
+                                                            help="Monthly pension amount in today's dollars")
+            
+            with col3:
+                private_pension_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="priv_idx_p2", 
+                                                                   value=get_default('private_pension_inflation_adjusted_p2', True))
+            
+            with col4:
+                bridged_enabled_p2 = st.checkbox("Add Bridge", key="bridged_p2", 
+                                                value=get_default('bridged_enabled_p2', False),
+                                                help="Enable if pension has a bridged amount until CPP/OAS starts")
+            
+            # Bridged amount fields on same row for Person 2
+            if bridged_enabled_p2:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    # Bridge start age defaults to 0 (disabled)
+                    default_bridge_start = get_default('bridged_start_age_p2', 0)
+                    if default_bridge_start > 100:
+                        default_bridge_start = 0
+                    bridged_start_age_p2 = st.number_input("Bridge Start Age", 0, 100, key="bridged_start_p2",
+                                                           value=default_bridge_start,
+                                                           help="Age when bridged amount starts (0 = no bridge)")
+                with col2:
+                    # Bridge end age defaults to 0 (disabled)
+                    default_end_age = get_default('bridged_end_age_p2', 0)
+                    if default_end_age > 100:
+                        default_end_age = 0
+                    # Ensure end age is at least start age
+                    if bridged_start_age_p2 > 0:
+                        default_end_age = max(bridged_start_age_p2, default_end_age)
+                    bridged_end_age_p2 = st.number_input("Bridge End Age", bridged_start_age_p2, 100, key="bridged_end_p2",
+                                                         value=default_end_age,
+                                                         help="Age when bridged amount ends (typically when CPP/OAS starts)")
+                with col3:
+                    bridged_amount_p2 = st.number_input("Bridge Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p2",
+                                                        value=get_default('bridged_amount_p2', 0),
+                                                        help="Additional monthly amount during bridge period")
+            else:
+                bridged_start_age_p2 = 999
+                bridged_end_age_p2 = 999
+                bridged_amount_p2 = 0
+        else:
+            # Single person Employer Pension
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                private_pension_start_age = st.number_input("Start Age", 0, 100, key="priv_start", 
+                                                           value=get_default('private_pension_start_age', 0),
+                                                           help="Age when employer pension starts (0 = no pension)")
+            
+            with col2:
+                monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt", 
                                                      value=get_default('monthly_private_pension', 0),
                                                      help="Monthly pension amount in today's dollars")
-        
-        with col3:
-            private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx_p1", 
-                                                            value=get_default('private_pension_inflation_adjusted', True))
-        
-        with col4:
-            bridged_enabled_p1 = st.checkbox("Add Bridge", key="bridged_p1", 
-                                            value=get_default('bridged_enabled_p1', False),
-                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
-        
-        # Bridged amount fields on same row for Person 1
-        if bridged_enabled_p1:
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                # Bridge start age defaults to 0 (disabled)
-                default_bridge_start = get_default('bridged_start_age_p1', 0)
-                if default_bridge_start > 100:
-                    default_bridge_start = 0
-                bridged_start_age_p1 = st.number_input("Bridge Start Age", 0, 100, key="bridged_start_p1",
-                                                       value=default_bridge_start,
-                                                       help="Age when bridged amount starts (0 = no bridge)")
-            with col2:
-                # Bridge end age defaults to 0 (disabled)
-                default_end_age = get_default('bridged_end_age_p1', 0)
-                if default_end_age > 100:
-                    default_end_age = 0
-                # Ensure end age is at least start age
-                if bridged_start_age_p1 > 0:
-                    default_end_age = max(bridged_start_age_p1, default_end_age)
-                bridged_end_age_p1 = st.number_input("Bridge End Age", bridged_start_age_p1, 100, key="bridged_end_p1",
-                                                     value=default_end_age,
-                                                     help="Age when bridged amount ends (typically when CPP/OAS starts)")
+            
             with col3:
-                bridged_amount_p1 = st.number_input("Bridge Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p1",
-                                                    value=get_default('bridged_amount_p1', 0),
-                                                    help="Additional monthly amount during bridge period")
-        else:
-            bridged_start_age_p1 = 999
-            bridged_end_age_p1 = 999
-            bridged_amount_p1 = 0
-        
-        # Person 2 Employer Pension
-        st.markdown("#### Person 2")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            private_pension_start_age_p2 = st.number_input("Start Age", 0, 100, key="priv_start_p2", 
-                                                              value=get_default('private_pension_start_age_p2', 0),
-                                                              help="Age when employer pension starts (0 = no pension)")
-        
-        with col2:
-            monthly_private_pension_p2 = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt_p2", 
-                                                        value=get_default('monthly_private_pension_p2', 0),
-                                                        help="Monthly pension amount in today's dollars")
-        
-        with col3:
-            private_pension_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="priv_idx_p2", 
-                                                               value=get_default('private_pension_inflation_adjusted_p2', True))
-        
-        with col4:
-            bridged_enabled_p2 = st.checkbox("Add Bridge", key="bridged_p2", 
-                                            value=get_default('bridged_enabled_p2', False),
-                                            help="Enable if pension has a bridged amount until CPP/OAS starts")
-        
-        # Bridged amount fields on same row for Person 2
-        if bridged_enabled_p2:
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                # Bridge start age defaults to 0 (disabled)
-                default_bridge_start = get_default('bridged_start_age_p2', 0)
-                if default_bridge_start > 100:
-                    default_bridge_start = 0
-                bridged_start_age_p2 = st.number_input("Bridge Start Age", 0, 100, key="bridged_start_p2",
-                                                       value=default_bridge_start,
-                                                       help="Age when bridged amount starts (0 = no bridge)")
-            with col2:
-                # Bridge end age defaults to 0 (disabled)
-                default_end_age = get_default('bridged_end_age_p2', 0)
-                if default_end_age > 100:
-                    default_end_age = 0
-                # Ensure end age is at least start age
-                if bridged_start_age_p2 > 0:
-                    default_end_age = max(bridged_start_age_p2, default_end_age)
-                bridged_end_age_p2 = st.number_input("Bridge End Age", bridged_start_age_p2, 100, key="bridged_end_p2",
-                                                     value=default_end_age,
-                                                     help="Age when bridged amount ends (typically when CPP/OAS starts)")
-            with col3:
-                bridged_amount_p2 = st.number_input("Bridge Monthly Amount (Today's $)", 0, 50000, step=100, key="bridged_amt_p2",
-                                                    value=get_default('bridged_amount_p2', 0),
-                                                    help="Additional monthly amount during bridge period")
-        else:
-            bridged_start_age_p2 = 999
-            bridged_end_age_p2 = 999
-            bridged_amount_p2 = 0
-    else:
-        # Single person Employer Pension
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            private_pension_start_age = st.number_input("Start Age", 0, 100, key="priv_start", 
-                                                       value=get_default('private_pension_start_age', 0),
-                                                       help="Age when employer pension starts (0 = no pension)")
-        
-        with col2:
-            monthly_private_pension = st.number_input("Monthly Amount (Today's $)", 0, 50000, step=100, key="priv_amt", 
-                                                     value=get_default('monthly_private_pension', 0),
-                                                     help="Monthly pension amount in today's dollars")
-        
-        with col3:
-            private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", 
+                private_pension_inflation_adjusted = st.checkbox("Indexed to Inflation", key="priv_idx", 
                                                             value=get_default('private_pension_inflation_adjusted', True))
-        
-        with col4:
-            bridged_enabled_p1 = st.checkbox("Add Bridge", key="bridged_single", 
+            
+            with col4:
+                bridged_enabled_p1 = st.checkbox("Add Bridge", key="bridged_single", 
                                             value=get_default('bridged_enabled_p1', False),
                                             help="Enable if pension has a bridged amount until CPP/OAS starts")
         
@@ -1367,15 +1395,15 @@ with tab3:
             bridged_start_age_p1 = 999
             bridged_end_age_p1 = 999
             bridged_amount_p1 = 0
-        
-        # Set Person 2 values to 0 for single mode
-        private_pension_start_age_p2 = 999
-        monthly_private_pension_p2 = 0
-        private_pension_inflation_adjusted_p2 = True
-        bridged_enabled_p2 = False
-        bridged_start_age_p2 = 999
-        bridged_end_age_p2 = 999
-        bridged_amount_p2 = 0
+    
+    # Set Person 2 values to 0 for single mode
+    private_pension_start_age_p2 = 999
+    monthly_private_pension_p2 = 0
+    private_pension_inflation_adjusted_p2 = True
+    bridged_enabled_p2 = False
+    bridged_start_age_p2 = 999
+    bridged_end_age_p2 = 999
+    bridged_amount_p2 = 0
     
     # Calculate button
     st.markdown("---")

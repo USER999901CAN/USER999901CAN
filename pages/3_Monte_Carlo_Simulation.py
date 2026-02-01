@@ -19,35 +19,110 @@ st.set_page_config(
 # Responsive styling
 st.markdown("""
     <style>
+        /* Base styles - COMPACT for desktop/tablet */
         .block-container {
-            padding-top: 1rem;
+            padding-top: 0.2rem;
+            padding-bottom: 0rem;
             max-width: 100%;
+        }
+        .stMetric {
+            background-color: transparent;
+            padding: 1px 3px;
+            border-radius: 2px;
+            margin: 0;
+        }
+        div[data-testid="stMetricValue"] {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        div[data-testid="stMetricLabel"] {
+            font-size: 10px;
+        }
+        h1 {
+            margin-top: 0.1rem;
+            margin-bottom: 0.2rem;
+            padding-top: 0.1rem;
+            font-size: 1.4rem;
+            line-height: 1.1;
+        }
+        h2 {
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+            font-size: 1.1rem;
+        }
+        h3 {
+            margin-top: 0;
+            margin-bottom: 0.15rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        label {
+            font-size: 0.75rem;
+            margin-bottom: 0.05rem;
+        }
+        .stButton button {
+            padding: 0.2rem 0.6rem;
+            width: 100%;
+            font-size: 0.8rem;
+            min-height: 28px;
+        }
+        p {
+            margin-bottom: 0.15rem;
+            font-size: 0.85rem;
+        }
+        
+        /* MOBILE FIRST - Phones (portrait) - Keep mobile-friendly */
+        @media (max-width: 480px) {
+            .block-container {
+                padding: 0.5rem 0.5rem;
+            }
+            h1 {
+                font-size: 1.3rem;
+                text-align: center;
+            }
+            h2 {
+                font-size: 1.1rem;
+            }
+            label {
+                font-size: 0.8rem;
+            }
+            .stButton button {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                min-height: 44px;
+            }
+            div[data-testid="stMetricValue"] {
+                font-size: 18px;
+            }
+            div[data-testid="stMetricLabel"] {
+                font-size: 12px;
+            }
         }
         
         /* Responsive adjustments for smaller laptops */
         @media (max-width: 1440px) {
             .block-container {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            h2 {
-                font-size: 1.2rem;
-            }
-        }
-        
-        @media (max-width: 1366px) {
-            .block-container {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
+                padding-left: 0.6rem;
+                padding-right: 0.6rem;
             }
             h1 {
                 font-size: 1.3rem;
             }
             h2 {
-                font-size: 1.1rem;
+                font-size: 1.05rem;
+            }
+        }
+        
+        @media (max-width: 1366px) {
+            .block-container {
+                padding-left: 0.4rem;
+                padding-right: 0.4rem;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+            h2 {
+                font-size: 1rem;
             }
         }
         
