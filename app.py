@@ -129,7 +129,7 @@ def migrate_scenario_data(data):
 
 # Page config
 st.set_page_config(
-    page_title="Main",
+    page_title="Retirement Planner",
     page_icon="💰",
     layout="wide"
 )
@@ -300,6 +300,17 @@ st.markdown("""
             padding: 0.5rem;
             margin-top: 0.3rem;
             margin-bottom: 0.3rem;
+        }
+        
+        /* Custom bordered sections for investment balances and contributions */
+        .investment-section-box {
+            background-color: #f8f9fa;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         /* Compact tabs */
@@ -1076,6 +1087,8 @@ with tab1:
         calculate_button_tab1 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab1")
 
 with tab2:
+    # Current Investment Balances - with custom styled border
+    st.markdown('<div class="investment-section-box">', unsafe_allow_html=True)
     st.markdown('<p class="section-heading">Current Investment Balances</p>', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     
@@ -1099,7 +1112,10 @@ with tab2:
         st.markdown('<p style="font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem;">Total:</p>', unsafe_allow_html=True)
     with col2:
         st.metric("", f"${total_investments:,.0f}", label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
     
+    # Ongoing Contributions - with custom styled border
+    st.markdown('<div class="investment-section-box">', unsafe_allow_html=True)
     st.markdown('<p class="section-heading">Ongoing Contributions</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
@@ -1121,6 +1137,7 @@ with tab2:
                                               default_stop_age,
                                               key="stop_inv_age",
                                               help="Age when you'll stop making monthly contributions")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Calculate button
     st.markdown("---")
