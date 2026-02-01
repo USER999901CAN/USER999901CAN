@@ -157,11 +157,11 @@ st.markdown("""
             font-size: 10px;
         }
         h1 {
-            margin-top: 0.5rem;
-            margin-bottom: 0.2rem;
-            padding-top: 0.3rem;
+            margin-top: 0.8rem;
+            margin-bottom: 0.3rem;
+            padding-top: 0.5rem;
             font-size: 1.05rem;
-            line-height: 1.2;
+            line-height: 1.3;
             white-space: normal;
             word-wrap: break-word;
         }
@@ -1057,12 +1057,12 @@ with tab2:
     
     total_investments = tfsa + rrsp + non_registered + lira
     
-    # Investment Totals box with light gray background (no heading)
-    st.markdown("""
-        <div class="investment-totals-box">
-        </div>
-    """, unsafe_allow_html=True)
-    st.metric("Total Current Investments", f"${total_investments:,.0f}")
+    # Display total on same row as label
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        st.markdown('<p style="font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem;">Total:</p>', unsafe_allow_html=True)
+    with col2:
+        st.metric("", f"${total_investments:,.0f}", label_visibility="collapsed")
     
     st.markdown('<p class="section-heading">Ongoing Contributions</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -1411,7 +1411,7 @@ with tab3:
         calculate_button_tab3 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab3")
 
 with tab4:
-    st.markdown("### Part-Time Work")
+    st.markdown('<p class="section-heading">Part-Time Work</p>', unsafe_allow_html=True)
     
     with st.container(border=True):
         st.markdown("**💼 Part-Time Work**")
@@ -1429,7 +1429,7 @@ with tab4:
             part_time_income = st.number_input("$/Mo", 0, 20000, step=100, key="pt_income", help="Monthly part-time income in today's dollars")
             part_time_inflation_adjusted = st.checkbox("Indexed", get_default('part_time_inflation_adjusted', False), key="pt_idx", help="Adjust part-time income for inflation")
     
-    st.markdown("### Lump Sums")
+    st.markdown('<p class="section-heading">Lump Sums</p>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
@@ -1500,13 +1500,13 @@ with tab4:
         calculate_button_tab4 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab4")
 
 with tab5:
-    st.markdown("### Age-Based Spending Reductions")
+    st.markdown('<p class="section-heading">Age-Based Spending Reductions</p>', unsafe_allow_html=True)
     st.caption("Reduce your required income at specific ages to reflect lower spending in later retirement")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("#### First Reduction")
+        st.markdown('<p style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.15rem;">First Reduction</p>', unsafe_allow_html=True)
         reduction_1_enabled = st.checkbox("Enable First Reduction", key="reduction_1_enabled", value=get_default('reduction_1_enabled', True))
         
         c1, c2 = st.columns(2)
@@ -1519,7 +1519,7 @@ with tab5:
             age_77_reduction = st.number_input("Reduce By (%)", 0, 100, key="age_reduction_1_pct", disabled=not reduction_1_enabled, value=get_default('age_77_reduction', 10))
     
     with col2:
-        st.markdown("#### Second Reduction")
+        st.markdown('<p style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.15rem;">Second Reduction</p>', unsafe_allow_html=True)
         reduction_2_enabled = st.checkbox("Enable Second Reduction", key="reduction_2_enabled", value=get_default('reduction_2_enabled', True))
         
         c1, c2 = st.columns(2)
