@@ -137,90 +137,96 @@ st.set_page_config(
 # Responsive styling for all devices (desktop, tablet, mobile)
 st.markdown("""
     <style>
-        /* Base styles */
+        /* Base styles - COMPACT for desktop/tablet */
         .block-container {
-            padding-top: 1rem;
+            padding-top: 0.5rem;
             padding-bottom: 0rem;
             max-width: 100%;
         }
         .stMetric {
             background-color: transparent;
-            padding: 2px 5px;
-            border-radius: 3px;
+            padding: 1px 3px;
+            border-radius: 2px;
             margin: 0;
         }
         div[data-testid="stMetricValue"] {
-            font-size: 16px;
+            font-size: 13px;
+            font-weight: 600;
         }
         div[data-testid="stMetricLabel"] {
-            font-size: 12px;
+            font-size: 10px;
         }
         h1 {
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-            padding-top: 0.5rem;
-            font-size: 1.8rem;
-            line-height: 1.3;
-        }
-        h2 {
             margin-top: 0.3rem;
             margin-bottom: 0.3rem;
-            font-size: 1.3rem;
+            padding-top: 0.3rem;
+            font-size: 1.4rem;
+            line-height: 1.2;
+        }
+        h2 {
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+            font-size: 1.1rem;
         }
         h3 {
             margin-top: 0;
-            margin-bottom: 0.2rem;
-            font-size: 0.95rem;
+            margin-bottom: 0.15rem;
+            font-size: 0.85rem;
             font-weight: 600;
         }
         h4 {
             margin-top: 0;
             margin-bottom: 0.1rem;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
         }
         .stNumberInput, .stCheckbox, .stDateInput, .stSelectbox {
             margin-bottom: 0;
         }
         div[data-baseweb="input"] {
             margin-bottom: 0;
-            min-height: 32px;
+            min-height: 28px;
+            font-size: 0.8rem;
         }
         div[data-baseweb="select"] {
             margin-bottom: 0;
-            min-height: 32px;
+            min-height: 28px;
+            font-size: 0.8rem;
         }
         label {
-            font-size: 0.85rem;
-            margin-bottom: 0.1rem;
+            font-size: 0.75rem;
+            margin-bottom: 0.05rem;
         }
         .stButton button {
-            padding: 0.3rem 1rem;
+            padding: 0.2rem 0.6rem;
             width: 100%;
+            font-size: 0.8rem;
+            min-height: 28px;
         }
         [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlock"] {
-            gap: 0.1rem;
+            gap: 0.05rem;
         }
         [data-testid="column"] {
-            padding: 0.2rem;
+            padding: 0.15rem;
         }
         div[data-testid="stExpander"] {
-            margin-top: 0.2rem;
-            margin-bottom: 0.2rem;
+            margin-top: 0.15rem;
+            margin-bottom: 0.15rem;
         }
         .element-container {
             margin-bottom: 0;
         }
         p {
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.15rem;
+            font-size: 0.85rem;
         }
         .stCaption {
-            font-size: 0.75rem;
-            margin-bottom: 0.1rem;
+            font-size: 0.7rem;
+            margin-bottom: 0.05rem;
         }
         
-        /* Force equal height for all bordered containers */
+        /* Compact bordered containers */
         div[style*="border: 1px solid"] {
-            min-height: 180px;
+            min-height: 150px;
             display: flex;
             flex-direction: column;
         }
@@ -229,18 +235,26 @@ st.markdown("""
         .stCheckbox {
             display: flex;
             align-items: center;
-            padding-top: 1.5rem;
+            padding-top: 1.2rem;
         }
-        
-        /* Unbold all checkbox labels */
         .stCheckbox label {
             font-weight: normal !important;
+            font-size: 0.75rem;
         }
         .stCheckbox label p {
             font-weight: normal !important;
         }
         
-        /* MOBILE FIRST - Phones (portrait) */
+        /* Compact tabs */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 0.3rem;
+        }
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+        }
+        
+        /* MOBILE FIRST - Phones (portrait) - Keep mobile-friendly */
         @media (max-width: 480px) {
             .block-container {
                 padding: 0.5rem 0.5rem;
@@ -260,9 +274,11 @@ st.markdown("""
             }
             div[data-baseweb="input"] {
                 min-height: 44px; /* Larger touch targets */
+                font-size: 0.9rem;
             }
             div[data-baseweb="select"] {
                 min-height: 44px;
+                font-size: 0.9rem;
             }
             .stButton button {
                 padding: 0.6rem 1rem;
@@ -293,89 +309,114 @@ st.markdown("""
             }
         }
         
-        /* TABLETS (portrait) */
+        /* TABLETS (portrait) - Slightly more compact */
         @media (min-width: 481px) and (max-width: 768px) {
             .block-container {
-                padding: 0.75rem;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            h2 {
-                font-size: 1.2rem;
-            }
-            label {
-                font-size: 0.85rem;
-            }
-            div[data-baseweb="input"] {
-                min-height: 40px;
-            }
-            .stButton button {
-                padding: 0.5rem 1rem;
-                min-height: 40px;
-            }
-            [data-testid="column"] {
-                padding: 0.25rem;
-            }
-        }
-        
-        /* TABLETS (landscape) and small laptops */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .block-container {
-                padding: 1rem;
-            }
-            h1 {
-                font-size: 1.6rem;
-            }
-            h2 {
-                font-size: 1.25rem;
-            }
-        }
-        
-        /* Small laptops (1280x720, 1366x768) */
-        @media (min-width: 1025px) and (max-width: 1366px) {
-            .block-container {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
+                padding: 0.6rem;
             }
             h1 {
                 font-size: 1.3rem;
             }
             h2 {
-                font-size: 1.1rem;
-            }
-            h3 {
-                font-size: 0.9rem;
+                font-size: 1.05rem;
             }
             label {
                 font-size: 0.75rem;
             }
             div[data-baseweb="input"] {
-                min-height: 28px;
+                min-height: 36px;
+                font-size: 0.85rem;
             }
             .stButton button {
-                padding: 0.2rem 0.8rem;
+                padding: 0.4rem 0.8rem;
+                min-height: 36px;
                 font-size: 0.85rem;
+            }
+            [data-testid="column"] {
+                padding: 0.2rem;
+            }
+        }
+        
+        /* TABLETS (landscape) and small laptops - More compact */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .block-container {
+                padding: 0.5rem;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            h2 {
+                font-size: 1.05rem;
+            }
+        }
+        
+        /* Small laptops (1280x720, 1366x768) - Very compact */
+        @media (min-width: 1025px) and (max-width: 1366px) {
+            .block-container {
+                padding-left: 0.4rem;
+                padding-right: 0.4rem;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+            h2 {
+                font-size: 1rem;
+            }
+            h3 {
+                font-size: 0.8rem;
+            }
+            label {
+                font-size: 0.7rem;
+            }
+            div[data-baseweb="input"] {
+                min-height: 28px;
+                font-size: 0.75rem;
+            }
+            .stButton button {
+                padding: 0.2rem 0.6rem;
+                font-size: 0.75rem;
             }
             [data-testid="column"] {
                 padding: 0.1rem;
             }
         }
         
-        /* Standard laptops (1440x900, 1600x900) */
+        /* Standard laptops (1440x900, 1600x900) - Compact */
         @media (min-width: 1367px) and (max-width: 1600px) {
             .block-container {
-                padding-left: 1rem;
-                padding-right: 1rem;
+                padding-left: 0.6rem;
+                padding-right: 0.6rem;
             }
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
             }
             h2 {
-                font-size: 1.2rem;
+                font-size: 1.05rem;
             }
             label {
-                font-size: 0.8rem;
+                font-size: 0.75rem;
+            }
+            div[data-testid="stMetricValue"] {
+                font-size: 13px;
+            }
+            div[data-testid="stMetricLabel"] {
+                font-size: 10px;
+            }
+        }
+        
+        /* Large laptops (1920x1080+) - Slightly more spacious but still compact */
+        @media (min-width: 1601px) and (max-width: 2559px) {
+            .block-container {
+                max-width: 1800px;
+                margin: 0 auto;
+                padding-left: 0.8rem;
+                padding-right: 0.8rem;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            h2 {
+                font-size: 1.1rem;
             }
             div[data-testid="stMetricValue"] {
                 font-size: 14px;
@@ -385,25 +426,25 @@ st.markdown("""
             }
         }
         
-        /* Large laptops (1920x1080+) */
-        @media (min-width: 1920px) {
-            .block-container {
-                max-width: 1800px;
-                margin: 0 auto;
-            }
-        }
-        
-        /* Ultra-wide displays (2560x1440+) */
+        /* Ultra-wide displays (2560x1440+) - More spacious */
         @media (min-width: 2560px) {
             .block-container {
                 max-width: 2200px;
                 margin: 0 auto;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
             h1 {
-                font-size: 2rem;
+                font-size: 1.6rem;
             }
             h2 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
+            }
+            div[data-testid="stMetricValue"] {
+                font-size: 15px;
+            }
+            div[data-testid="stMetricLabel"] {
+                font-size: 12px;
             }
         }
         

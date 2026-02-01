@@ -12,32 +12,51 @@ st.set_page_config(
     layout="wide"
 )
 
-# Responsive styling
+# Responsive styling - COMPACT for desktop/tablet
 st.markdown("""
     <style>
+        /* Base compact styles */
         .block-container {
-            padding-top: 1rem;
+            padding-top: 0.5rem;
             max-width: 100%;
         }
-        
-        /* Responsive adjustments for smaller laptops */
-        @media (max-width: 1440px) {
-            .block-container {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            h2 {
-                font-size: 1.2rem;
-            }
+        h1 {
+            margin-top: 0.3rem;
+            margin-bottom: 0.3rem;
+            font-size: 1.4rem;
+            line-height: 1.2;
+        }
+        h2 {
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+            font-size: 1.1rem;
+        }
+        h3 {
+            margin-top: 0;
+            margin-bottom: 0.15rem;
+            font-size: 0.85rem;
+        }
+        p {
+            margin-bottom: 0.15rem;
+            font-size: 0.85rem;
+        }
+        .stButton button {
+            padding: 0.2rem 0.6rem;
+            font-size: 0.8rem;
+            min-height: 28px;
+        }
+        label {
+            font-size: 0.75rem;
+        }
+        div[data-baseweb="select"] {
+            min-height: 28px;
+            font-size: 0.8rem;
         }
         
-        @media (max-width: 1366px) {
+        /* Mobile - Keep touch-friendly */
+        @media (max-width: 480px) {
             .block-container {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
+                padding: 0.5rem;
             }
             h1 {
                 font-size: 1.3rem;
@@ -45,20 +64,87 @@ st.markdown("""
             h2 {
                 font-size: 1.1rem;
             }
-        }
-        
-        /* Optimizations for large displays */
-        @media (min-width: 1920px) {
-            .block-container {
-                max-width: 1800px;
-                margin: 0 auto;
+            .stButton button {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                min-height: 44px;
+            }
+            div[data-baseweb="select"] {
+                min-height: 44px;
+                font-size: 0.9rem;
             }
         }
         
+        /* Tablets */
+        @media (min-width: 481px) and (max-width: 1024px) {
+            .block-container {
+                padding: 0.6rem;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            h2 {
+                font-size: 1.05rem;
+            }
+        }
+        
+        /* Small laptops - Very compact */
+        @media (min-width: 1025px) and (max-width: 1366px) {
+            .block-container {
+                padding-left: 0.4rem;
+                padding-right: 0.4rem;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+            h2 {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Standard laptops - Compact */
+        @media (min-width: 1367px) and (max-width: 1600px) {
+            .block-container {
+                padding-left: 0.6rem;
+                padding-right: 0.6rem;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            h2 {
+                font-size: 1.05rem;
+            }
+        }
+        
+        /* Large displays */
+        @media (min-width: 1601px) and (max-width: 2559px) {
+            .block-container {
+                max-width: 1800px;
+                margin: 0 auto;
+                padding-left: 0.8rem;
+                padding-right: 0.8rem;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            h2 {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Ultra-wide displays */
         @media (min-width: 2560px) {
             .block-container {
                 max-width: 2200px;
                 margin: 0 auto;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            h2 {
+                font-size: 1.3rem;
             }
         }
     </style>
