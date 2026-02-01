@@ -157,10 +157,10 @@ st.markdown("""
             font-size: 10px;
         }
         h1 {
-            margin-top: 0.05rem;
+            margin-top: 0.5rem;
             margin-bottom: 0.2rem;
-            padding-top: 0.05rem;
-            font-size: 1.4rem;
+            padding-top: 0.3rem;
+            font-size: 1.05rem;
             line-height: 1.2;
             white-space: normal;
             word-wrap: break-word;
