@@ -139,7 +139,7 @@ st.markdown("""
     <style>
         /* Base styles - COMPACT for desktop/tablet */
         .block-container {
-            padding-top: 0.2rem;
+            padding-top: 0rem;
             padding-bottom: 0rem;
             max-width: 100%;
         }
@@ -157,9 +157,9 @@ st.markdown("""
             font-size: 10px;
         }
         h1 {
-            margin-top: 0.8rem;
+            margin-top: 0.3rem;
             margin-bottom: 0.3rem;
-            padding-top: 0.5rem;
+            padding-top: 0.2rem;
             font-size: 1.05rem;
             line-height: 1.3;
             white-space: normal;
