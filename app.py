@@ -139,7 +139,7 @@ st.markdown("""
     <style>
         /* Base styles - COMPACT for desktop/tablet */
         .block-container {
-            padding-top: 0.5rem;
+            padding-top: 0.2rem;
             padding-bottom: 0rem;
             max-width: 100%;
         }
@@ -157,11 +157,11 @@ st.markdown("""
             font-size: 10px;
         }
         h1 {
-            margin-top: 0.3rem;
-            margin-bottom: 0.3rem;
-            padding-top: 0.3rem;
+            margin-top: 0.1rem;
+            margin-bottom: 0.2rem;
+            padding-top: 0.1rem;
             font-size: 1.4rem;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         h2 {
             margin-top: 0.2rem;
@@ -171,13 +171,13 @@ st.markdown("""
         h3 {
             margin-top: 0;
             margin-bottom: 0.15rem;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
         }
         h4 {
             margin-top: 0;
             margin-bottom: 0.1rem;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
         .stNumberInput, .stCheckbox, .stDateInput, .stSelectbox {
             margin-bottom: 0;
@@ -967,7 +967,7 @@ def calculate_age(birthdate):
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["1. 👤 Personal & Basic", "2. 💰 Investments", "3. 🏛️ Pensions", "4. 💼 Extra Income & Lump Sums", "5. 📉 Spending Adjustments"])
 
 with tab1:
-    st.markdown("### Personal Information")
+    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Personal Information</p>', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -995,10 +995,15 @@ with tab1:
     
     with col4:
         retirement_year_one_income = st.number_input("Required Monthly Income (Today's $)", 0, 500000, get_default('retirement_year_one_income', 0), step=100, help="Monthly income needed in today's dollars")
-        inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), key="inflation_adj", help="Increase required income each year with inflation")
-        ignore_oas_clawback = st.checkbox("Income Splitting (Ignore OAS Clawback)", get_default('ignore_oas_clawback', False), key="ignore_clawback", help="Enable if using income splitting to avoid OAS clawback")
     
-    st.markdown("### Financial Assumptions")
+    # Move checkboxes to their own row
+    col1, col2 = st.columns(2)
+    with col1:
+        ignore_oas_clawback = st.checkbox("Income Splitting (Ignore OAS Clawback)", get_default('ignore_oas_clawback', False), key="ignore_clawback", help="Enable if using income splitting to avoid OAS clawback")
+    with col2:
+        inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), key="inflation_adj", help="Increase required income each year with inflation")
+    
+    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0.3rem;">Financial Assumptions</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
     with col1:
@@ -1014,7 +1019,7 @@ with tab1:
         calculate_button_tab1 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab1")
 
 with tab2:
-    st.markdown("### Current Investment Balances")
+    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Current Investment Balances</p>', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -1032,7 +1037,7 @@ with tab2:
     total_investments = tfsa + rrsp + non_registered + lira
     st.metric("Total Current Investments", f"${total_investments:,.0f}")
     
-    st.markdown("### Ongoing Contributions")
+    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0.3rem;">Ongoing Contributions</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
     with col1:
@@ -1061,137 +1066,143 @@ with tab2:
         calculate_button_tab2 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab2")
 
 with tab3:
-    # Couple mode toggle at the top
-    st.markdown("### Planning Mode")
-    couple_mode = st.checkbox("👫 Couple Mode (Separate Pensions)", 
-                              value=get_default('couple_mode', False),
-                              help="Enable to enter separate pension amounts for each person")
+    # Planning mode - Single or Couple
+    st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Planning Mode</p>', unsafe_allow_html=True)
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        planning_mode = st.radio("", ["Single", "Couple"], 
+                                index=0 if not get_default('couple_mode', False) else 1,
+                                horizontal=True,
+                                help="Single: One person's pensions | Couple: Separate pensions for each person")
+        couple_mode = (planning_mode == "Couple")
     
-    st.markdown("---")
+    # OAS and CPP in one box
+    with st.container(border=True):
+        st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Old Age Security (OAS)</p>', unsafe_allow_html=True)
+        
+        if couple_mode:
+            # Person 1 OAS
+            st.markdown('<p style="font-size: 0.7rem; font-weight: 600; margin-bottom: 0.1rem;">Person 1</p>', unsafe_allow_html=True)
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start_p1", 
+                                               value=get_default('oas_start_age', 65), 
+                                               help="Age when OAS starts (typically 65)")
+            
+            with col2:
+                monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p1", 
+                                             value=get_default('monthly_oas', 742), 
+                                             help="Monthly OAS amount in today's dollars (max ~$742)")
+            
+            with col3:
+                oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx_p1", 
+                                                    value=get_default('oas_inflation_adjusted', True))
+            
+            # Person 2 OAS
+            st.markdown('<p style="font-size: 0.7rem; font-weight: 600; margin-bottom: 0.1rem; margin-top: 0.2rem;">Person 2</p>', unsafe_allow_html=True)
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                oas_start_age_p2 = st.number_input("Start Age", 65, 70, key="oas_start_p2", 
+                                                  value=min(get_default('oas_start_age_p2', 65), 70), 
+                                                  help="Age when OAS starts (typically 65)")
+            
+            with col2:
+                monthly_oas_p2 = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p2", 
+                                                value=get_default('monthly_oas_p2', 742), 
+                                                help="Monthly OAS amount in today's dollars (max ~$742)")
+            
+            with col3:
+                oas_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="oas_idx_p2", 
+                                                       value=get_default('oas_inflation_adjusted_p2', True))
+        else:
+            # Single person OAS
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start", 
+                                               value=get_default('oas_start_age', 65), 
+                                               help="Age when OAS starts (typically 65)")
+            
+            with col2:
+                monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt", 
+                                             value=get_default('monthly_oas', 742), 
+                                             help="Monthly OAS amount in today's dollars (max ~$742)")
+            
+            with col3:
+                oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx", 
+                                                    value=get_default('oas_inflation_adjusted', True))
+            
+            # Set Person 2 values to 0 for single mode
+            oas_start_age_p2 = 999
+            monthly_oas_p2 = 0
+            oas_inflation_adjusted_p2 = True
+        
+        st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0.3rem;">Canada Pension Plan (CPP)</p>', unsafe_allow_html=True)
+        
+        if couple_mode:
+            # Person 1 CPP
+            st.markdown('<p style="font-size: 0.7rem; font-weight: 600; margin-bottom: 0.1rem;">Person 1</p>', unsafe_allow_html=True)
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start_p1", 
+                                               value=get_default('cpp_start_age', 70), 
+                                               help="Age when CPP starts (60-70)")
+            
+            with col2:
+                monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p1", 
+                                             value=get_default('monthly_cpp', 0), 
+                                             help="Monthly CPP amount in today's dollars")
+            
+            with col3:
+                cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx_p1", 
+                                                    value=get_default('cpp_inflation_adjusted', True))
+            
+            # Person 2 CPP
+            st.markdown('<p style="font-size: 0.7rem; font-weight: 600; margin-bottom: 0.1rem; margin-top: 0.2rem;">Person 2</p>', unsafe_allow_html=True)
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                cpp_start_age_p2 = st.number_input("Start Age", 60, 70, key="cpp_start_p2", 
+                                                  value=min(get_default('cpp_start_age_p2', 70), 70), 
+                                                  help="Age when CPP starts (60-70)")
+            
+            with col2:
+                monthly_cpp_p2 = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p2", 
+                                                value=get_default('monthly_cpp_p2', 0), 
+                                                help="Monthly CPP amount in today's dollars")
+            
+            with col3:
+                cpp_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="cpp_idx_p2", 
+                                                       value=get_default('cpp_inflation_adjusted_p2', True))
+        else:
+            # Single person CPP
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start", 
+                                               value=get_default('cpp_start_age', 70), 
+                                               help="Age when CPP starts (60-70)")
+            
+            with col2:
+                monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt", 
+                                             value=get_default('monthly_cpp', 0), 
+                                             help="Monthly CPP amount in today's dollars")
+            
+            with col3:
+                cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx", 
+                                                    value=get_default('cpp_inflation_adjusted', True))
+            
+            # Set Person 2 values to 0 for single mode
+            cpp_start_age_p2 = 999
+            monthly_cpp_p2 = 0
+            cpp_inflation_adjusted_p2 = True
     
-    st.markdown("### Old Age Security (OAS)")
-    
-    if couple_mode:
-        # Person 1 OAS
-        st.markdown("#### Person 1")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start_p1", 
-                                           value=get_default('oas_start_age', 65), 
-                                           help="Age when OAS starts (typically 65)")
-        
-        with col2:
-            monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p1", 
-                                         value=get_default('monthly_oas', 0), 
-                                         help="Monthly OAS amount in today's dollars")
-        
-        with col3:
-            oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx_p1", 
-                                                value=get_default('oas_inflation_adjusted', True))
-        
-        # Person 2 OAS
-        st.markdown("#### Person 2")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            oas_start_age_p2 = st.number_input("Start Age", 65, 70, key="oas_start_p2", 
-                                              value=min(get_default('oas_start_age_p2', 65), 70), 
-                                              help="Age when OAS starts (typically 65)")
-        
-        with col2:
-            monthly_oas_p2 = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt_p2", 
-                                            value=get_default('monthly_oas_p2', 0), 
-                                            help="Monthly OAS amount in today's dollars")
-        
-        with col3:
-            oas_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="oas_idx_p2", 
-                                                   value=get_default('oas_inflation_adjusted_p2', True))
-    else:
-        # Single person OAS
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            oas_start_age = st.number_input("Start Age", 65, 70, key="oas_start", 
-                                           value=get_default('oas_start_age', 65), 
-                                           help="Age when OAS starts (typically 65)")
-        
-        with col2:
-            monthly_oas = st.number_input("Monthly Amount (Today's $)", 0, 5000, step=50, key="oas_amt", 
-                                         value=get_default('monthly_oas', 0), 
-                                         help="Monthly OAS amount in today's dollars")
-        
-        with col3:
-            oas_inflation_adjusted = st.checkbox("Indexed to Inflation", key="oas_idx", 
-                                                value=get_default('oas_inflation_adjusted', True))
-        
-        # Set Person 2 values to 0 for single mode
-        oas_start_age_p2 = 999
-        monthly_oas_p2 = 0
-        oas_inflation_adjusted_p2 = True
-    
-    st.markdown("### Canada Pension Plan (CPP)")
-    
-    if couple_mode:
-        # Person 1 CPP
-        st.markdown("#### Person 1")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start_p1", 
-                                           value=get_default('cpp_start_age', 70), 
-                                           help="Age when CPP starts (60-70)")
-        
-        with col2:
-            monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p1", 
-                                         value=get_default('monthly_cpp', 0), 
-                                         help="Monthly CPP amount in today's dollars")
-        
-        with col3:
-            cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx_p1", 
-                                                value=get_default('cpp_inflation_adjusted', True))
-        
-        # Person 2 CPP
-        st.markdown("#### Person 2")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            cpp_start_age_p2 = st.number_input("Start Age", 60, 70, key="cpp_start_p2", 
-                                              value=min(get_default('cpp_start_age_p2', 70), 70), 
-                                              help="Age when CPP starts (60-70)")
-        
-        with col2:
-            monthly_cpp_p2 = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt_p2", 
-                                            value=get_default('monthly_cpp_p2', 0), 
-                                            help="Monthly CPP amount in today's dollars")
-        
-        with col3:
-            cpp_inflation_adjusted_p2 = st.checkbox("Indexed to Inflation", key="cpp_idx_p2", 
-                                                   value=get_default('cpp_inflation_adjusted_p2', True))
-    else:
-        # Single person CPP
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            cpp_start_age = st.number_input("Start Age", 60, 70, key="cpp_start", 
-                                           value=get_default('cpp_start_age', 70), 
-                                           help="Age when CPP starts (60-70)")
-        
-        with col2:
-            monthly_cpp = st.number_input("Monthly Amount (Today's $)", 0, 10000, step=50, key="cpp_amt", 
-                                         value=get_default('monthly_cpp', 0), 
-                                         help="Monthly CPP amount in today's dollars")
-        
-        with col3:
-            cpp_inflation_adjusted = st.checkbox("Indexed to Inflation", key="cpp_idx", 
-                                                value=get_default('cpp_inflation_adjusted', True))
-        
-        # Set Person 2 values to 0 for single mode
-        cpp_start_age_p2 = 999
-        monthly_cpp_p2 = 0
-        cpp_inflation_adjusted_p2 = True
-    
-    st.markdown("### Employer/Private Pension")
+    # Employer pension in separate box
+    with st.container(border=True):
+        st.markdown('<p style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem;">Employer/Private Pension</p>', unsafe_allow_html=True)
     
     if couple_mode:
         # Person 1 Employer Pension
