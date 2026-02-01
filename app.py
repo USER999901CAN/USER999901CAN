@@ -1017,13 +1017,6 @@ with tab1:
     with col4:
         retirement_year_one_income = st.number_input("Required Monthly Income (Today's $)", 0, 500000, get_default('retirement_year_one_income', 0), step=100, help="Monthly income needed in today's dollars")
     
-    # Move checkboxes to their own row
-    col1, col2 = st.columns(2)
-    with col1:
-        ignore_oas_clawback = st.checkbox("Income Splitting (Ignore OAS Clawback)", get_default('ignore_oas_clawback', False), key="ignore_clawback", help="Enable if using income splitting to avoid OAS clawback")
-    with col2:
-        inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), key="inflation_adj", help="Increase required income each year with inflation")
-    
     st.markdown('<p class="section-heading">Financial Assumptions</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
@@ -1032,6 +1025,13 @@ with tab1:
     
     with col2:
         investment_return = st.number_input("Expected Investment Return (%)", 0.0, 20.0, get_default('investment_return', 6.0), step=0.1)
+    
+    # Checkboxes row under inflation
+    col1, col2 = st.columns(2)
+    with col1:
+        ignore_oas_clawback = st.checkbox("Income Splitting (Ignore OAS Clawback)", get_default('ignore_oas_clawback', False), key="ignore_clawback", help="Enable if using income splitting to avoid OAS clawback")
+    with col2:
+        inflation_adjustment_enabled = st.checkbox("Adjust Required Income for Inflation", get_default('inflation_adjustment_enabled', True), key="inflation_adj", help="Increase required income each year with inflation")
     
     # Calculate button
     st.markdown("---")
@@ -1057,10 +1057,9 @@ with tab2:
     
     total_investments = tfsa + rrsp + non_registered + lira
     
-    # Investment Totals box with light gray background
+    # Investment Totals box with light gray background (no heading)
     st.markdown("""
         <div class="investment-totals-box">
-            <p class="section-heading" style="margin-top: 0;">Investment Totals</p>
         </div>
     """, unsafe_allow_html=True)
     st.metric("Total Current Investments", f"${total_investments:,.0f}")
@@ -1094,19 +1093,19 @@ with tab2:
         calculate_button_tab2 = st.button("📊 Calculate", type="primary", use_container_width=True, key="calc_tab2")
 
 with tab3:
-    # Planning mode - Single or Couple
-    st.markdown('<p class="section-heading">Planning Mode</p>', unsafe_allow_html=True)
+    # Planning mode - Single or Couple (no heading)
     col1, col2 = st.columns([1, 3])
     with col1:
         planning_mode = st.radio("", ["Single", "Couple"], 
                                 index=0 if not get_default('couple_mode', False) else 1,
                                 horizontal=True,
-                                help="Single: One person's pensions | Couple: Separate pensions for each person")
+                                help="Single: One person's pensions | Couple: Separate pensions for each person",
+                                label_visibility="collapsed")
         couple_mode = (planning_mode == "Couple")
     
     # OAS and CPP in one box
     with st.container(border=True):
-        st.markdown('<p class="section-heading" style="margin-top: 0;">Old Age Security (OAS)</p>', unsafe_allow_html=True)
+        st.markdown('<p style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0;">Old Age Security (OAS)</p>', unsafe_allow_html=True)
         
         if couple_mode:
             # Person 1 OAS
@@ -1167,7 +1166,7 @@ with tab3:
             monthly_oas_p2 = 0
             oas_inflation_adjusted_p2 = True
         
-        st.markdown('<p class="section-heading">Canada Pension Plan (CPP)</p>', unsafe_allow_html=True)
+        st.markdown('<p style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0.3rem;">Canada Pension Plan (CPP)</p>', unsafe_allow_html=True)
         
         if couple_mode:
             # Person 1 CPP
@@ -1230,7 +1229,7 @@ with tab3:
     
     # Employer pension in separate box - includes all fields
     with st.container(border=True):
-        st.markdown('<p class="section-heading" style="margin-top: 0;">Employer/Private Pension</p>', unsafe_allow_html=True)
+        st.markdown('<p style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.15rem; margin-top: 0;">Employer/Private Pension</p>', unsafe_allow_html=True)
         
         if couple_mode:
             # Person 1 Employer Pension
@@ -1415,12 +1414,7 @@ with tab4:
     st.markdown("### Part-Time Work")
     
     with st.container(border=True):
-        # Title row with checkbox on the right
-        title_col, checkbox_col = st.columns([3, 1])
-        with title_col:
-            st.markdown("**💼 Part-Time Work**")
-        with checkbox_col:
-            part_time_inflation_adjusted = st.checkbox("Indexed", get_default('part_time_inflation_adjusted', False), key="pt_idx", help="Adjust part-time income for inflation")
+        st.markdown("**💼 Part-Time Work**")
         
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -1433,6 +1427,7 @@ with tab4:
             part_time_end_age = st.number_input("End Age", part_time_start_age, 100, default_part_time_end, key="pt_end_age")
         with c3:
             part_time_income = st.number_input("$/Mo", 0, 20000, step=100, key="pt_income", help="Monthly part-time income in today's dollars")
+            part_time_inflation_adjusted = st.checkbox("Indexed", get_default('part_time_inflation_adjusted', False), key="pt_idx", help="Adjust part-time income for inflation")
     
     st.markdown("### Lump Sums")
     
