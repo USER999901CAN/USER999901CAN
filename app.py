@@ -137,6 +137,22 @@ st.set_page_config(
 # Responsive styling for all devices (desktop, tablet, mobile)
 st.markdown("""
     <style>
+        /* Hide Streamlit header to prevent title truncation */
+        header[data-testid="stHeader"] {
+            display: none;
+        }
+        
+        /* Alternative: If you want to keep the header but push content down */
+        /* Uncomment below and comment out the display:none above if preferred */
+        /*
+        header[data-testid="stHeader"] {
+            background-color: transparent;
+        }
+        .main > div:first-child {
+            padding-top: 3rem;
+        }
+        */
+        
         /* Base styles - COMPACT for desktop/tablet */
         .block-container {
             padding-top: 0rem;
