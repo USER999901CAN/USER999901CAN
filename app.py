@@ -203,16 +203,36 @@ st.markdown("""
         div[data-baseweb="input"] {
             margin-bottom: 0;
             min-height: 28px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            font-family: "Source Sans Pro", sans-serif;
         }
         div[data-baseweb="select"] {
             margin-bottom: 0;
             min-height: 28px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            font-family: "Source Sans Pro", sans-serif;
+        }
+        /* Input field text */
+        input, select, textarea {
+            font-size: 0.75rem !important;
+            font-family: "Source Sans Pro", sans-serif !important;
         }
         label {
-            font-size: 0.75rem;
+            font-size: 0.75rem !important;
             margin-bottom: 0.05rem;
+            font-family: "Source Sans Pro", sans-serif !important;
+            font-weight: 400 !important;
+        }
+        
+        /* Ensure all Streamlit input labels match */
+        .stDateInput label,
+        .stNumberInput label,
+        .stSelectbox label,
+        .stTextInput label,
+        .stCheckbox label {
+            font-size: 0.75rem !important;
+            font-family: "Source Sans Pro", sans-serif !important;
+            font-weight: 400 !important;
         }
         
         /* Section headings - same as labels but one size larger and bold */
